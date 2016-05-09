@@ -30,7 +30,7 @@ then
 		mkdir -p $DATETIME
 		cd ..
 		mv monkey_log_$DATETIME.txt unknown/$DATETIME
-		$ADB_DEVICE pull /data/tombstone/ unknown/$DATETIME/
+		$ADB_DEVICE pull /data/tombstones/ unknown/$DATETIME/
 		$ADB_DEVICE pull /data/system/dropbox/ unknown/$DATETIME/
 		$ADB_DEVICE shell rm -f /data/tombstones/*
 		$ADB_DEVICE shell rm -f /data/system/dropbox/*
@@ -55,7 +55,7 @@ then
 		cd ..
 		cd ..
 		mv monkey_log_$DATETIME.txt ANR/$ERROR_INFO/$ERROR_POS/$DATETIME/
-		$ADB_DEVICE pull /data/tombstone/ ANR/$ERROR_INFO/$ERROR_POS/$DATETIME/
+		$ADB_DEVICE pull /data/tombstones/ ANR/$ERROR_INFO/$ERROR_POS/$DATETIME/
 		$ADB_DEVICE pull /data/system/dropbox/ ANR/$ERROR_INFO/$ERROR_POS/$DATETIME/
 		$ADB_DEVICE shell rm -f /data/tombstones/*
 		$ADB_DEVICE shell rm -f /data/system/dropbox/*
@@ -75,7 +75,7 @@ then
 				cd ..
 				cd ..
 				mv monkey_log_$DATETIME.txt CRASH/$ERROR_POS/$DATETIME/
-				$ADB_DEVICE pull /data/tombstone/ CRASH/$ERROR_POS/$DATETIME/
+				$ADB_DEVICE pull /data/tombstones/ CRASH/$ERROR_POS/$DATETIME/
 				$ADB_DEVICE pull /data/system/dropbox/ CRASH/$ERROR_POS/$DATETIME/
 				$ADB_DEVICE shell rm -f /data/tombstones/*
 				$ADB_DEVICE shell rm -f /data/system/dropbox/*
@@ -117,7 +117,7 @@ then
 			mkdir -p $DATETIME
 			cd ..
 			mv monkey_log_$DATETIME.txt unknown/$DATETIME
-			$ADB_DEVICE pull /data/tombstone/ unknown/$DATETIME/
+			$ADB_DEVICE pull /data/tombstones/ unknown/$DATETIME/
 			$ADB_DEVICE pull /data/system/dropbox/ unknown/$DATETIME/
 			$ADB_DEVICE shell /system/bin/screencap -p /sdcard/screenshot.png
 			$ADB_DEVICE pull /sdcard/screenshot.png unknown/$DATETIME/
@@ -144,7 +144,7 @@ then
 			cd ..
 			cd ..
 			mv monkey_log_$DATETIME.txt ANR/$ERROR_INFO/$ERROR_POS/$DATETIME/
-			$ADB_DEVICE pull /data/tombstone/ ANR/$ERROR_INFO/$ERROR_POS/$DATETIME/
+			$ADB_DEVICE pull /data/tombstones/ ANR/$ERROR_INFO/$ERROR_POS/$DATETIME/
 			$ADB_DEVICE pull /data/system/dropbox/ ANR/$ERROR_INFO/$ERROR_POS/$DATETIME/
 			$ADB_DEVICE shell /system/bin/screencap -p /sdcard/screenshot.png
 			$ADB_DEVICE pull /sdcard/screenshot.png ANR/$ERROR_INFO/$ERROR_POS/$DATETIME/
@@ -166,7 +166,7 @@ then
 					cd ..
 					cd ..
 					mv monkey_log_$DATETIME.txt CRASH/$ERROR_POS/$DATETIME/
-					$ADB_DEVICE pull /data/tombstone/ CRASH/$ERROR_POS/$DATETIME/
+					$ADB_DEVICE pull /data/tombstones/ CRASH/$ERROR_POS/$DATETIME/
 					$ADB_DEVICE pull /data/system/dropbox/ CRASH/$ERROR_POS/$DATETIME/
 					$ADB_DEVICE shell /system/bin/screencap -p /sdcard/screenshot.png
 					$ADB_DEVICE pull /sdcard/screenshot.png CRASH/$ERROR_POS/$DATETIME/
