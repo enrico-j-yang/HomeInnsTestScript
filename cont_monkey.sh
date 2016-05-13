@@ -9,14 +9,14 @@ RUN_TIME=1
 EVENT_EXERCUTED=0
 
 function normalCat(){
-	echo normal finish
+	echo *****normal finish*****
 	mkdir -p normal
 	LOGPATH=normal/
 	mv monkey_log_$DATETIME.txt $LOGPATH
 }
 
 function unknownCat(){
-	echo unknown reason interruption
+	echo *****unknown reason interruption*****
 	mkdir -p unknown
 	cd unknown
 	mkdir -p $DATETIME
@@ -26,7 +26,7 @@ function unknownCat(){
 }
 
 function anrCat(){
-	echo error cause:ANR
+	echo *****error cause:ANR*****
 	mkdir -p ANR
 	cd ANR
 	ERROR_POS=$(echo $ERROR_INFO | cut -d \/ -f 2 | cut -d \) -f 1 | cut -d . -f 2)
@@ -44,7 +44,7 @@ function anrCat(){
 }
 
 function crashCat(){
-	echo error cause:CRASH
+	echo *****error cause:CRASH*****
 	ERROR_MODULE=$(cat monkey_log_$DATETIME.txt | grep 'CRASH:' | awk '{printf $3}')
 	ERROR_POS=$(cat monkey_log_$DATETIME.txt | grep '.java:' | head -1 | awk '{printf $3}')
 	if test -n "$ERROR_POS" ;then
@@ -73,6 +73,7 @@ function pullLogAndRemove(){
 	$ADB_DEVICE shell rm -f /data/system/dropbox/*
 	$ADB_DEVICE shell /system/bin/screencap -p /sdcard/screenshot.png
 	$ADB_DEVICE pull /sdcard/screenshot.png $LOGPATH
+    mv logcat_$DATETIME.log $LOGPATH
 }
 
 
@@ -170,7 +171,8 @@ else
 		if test -n "$MONKEY_SEED" ;then
 			echo "****run monkey with specified seed" $MONKEY_SEED "*****"
 		fi
-		DATETIME=`date +%Y%m%d-%H%M%S`
+        DATETIME=`date +%Y%m%d-%H%M%S`
+        nohup adb logcat > logcat_$DATETIME.log &
 		$ADB_DEVICE shell monkey --pkg-blacklist-file /data/blacklist.txt --pct-trackball 0 $MONKEY_SEED -v -v -v $RUN_TIME > monkey_log_$DATETIME.txt
 		# analyse monkey log, figure out error catagory and pull log to pc
 		echo "*****analyse monkey log*****"
@@ -198,6 +200,7 @@ else
 			fi
 			if test -z "$ERROR_INFO" ;then
 				normalCat
+                pullLogAndRemove
 			fi
 		fi
 
