@@ -172,7 +172,7 @@ else
 			echo "****run monkey with specified seed" $MONKEY_SEED "*****"
 		fi
         DATETIME=`date +%Y%m%d-%H%M%S`
-        nohup adb logcat > logcat_$DATETIME.log &
+        nohup $ADB_DEVICE logcat > logcat_$DATETIME.log &
 		$ADB_DEVICE shell monkey --pkg-blacklist-file /data/blacklist.txt --pct-trackball 0 $MONKEY_SEED -v -v -v $RUN_TIME > monkey_log_$DATETIME.txt
 		# analyse monkey log, figure out error catagory and pull log to pc
 		echo "*****analyse monkey log*****"
