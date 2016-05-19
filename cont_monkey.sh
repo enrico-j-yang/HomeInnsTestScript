@@ -29,7 +29,7 @@ function anrCat(){
 	echo *****error cause:ANR*****
 	mkdir -p ANR
 	cd ANR
-	ERROR_POS=$(echo $ERROR_INFO | cut -d \/ -f 2 | cut -d \) -f 1 | cut -d . -f 2)
+	ERROR_POS=$(echo $ERROR_INFO | cut -d \/ -f 2 | cut -d \) -f 1 | cut -d . -f 2 | awk '{print ${NF}}')
 	ERROR_MODULE=$(echo $ERROR_INFO | awk '{print $3}')
 	mkdir -p $ERROR_MODULE
 	cd $ERROR_MODULE
@@ -46,7 +46,7 @@ function anrCat(){
 function crashCat(){
 	echo *****error cause:CRASH*****
 	ERROR_MODULE=$(cat monkey_log_$DATETIME.txt | grep 'CRASH:' | awk '{printf $3}')
-	ERROR_POS=$(cat monkey_log_$DATETIME.txt | grep '.java:' | head -1 | awk '{printf $3}')
+	ERROR_POS=$(cat monkey_log_$DATETIME.txt | grep '.java:' | head -1 | awk '{printf $3}' | cut -d \( -f 1)
 	if test -n "$ERROR_POS" ;then
 		echo 'error cause:CRASH'
 		echo 'error position:'$ERROR_POS
@@ -66,9 +66,15 @@ function crashCat(){
 }
 
 function pullLogAndRemove(){
-
+    $ADB_DEVICE pull /data/system/dropbox/ $LOGPATH
+    cd $LOGPATH
+    mkdir -p log
+    cp *_anr* *_crash* log/
+    rm *
+    cp log/* .
+    rm -rf log/
+    cd -
 	$ADB_DEVICE pull /data/tombstones/ $LOGPATH
-	$ADB_DEVICE pull /data/system/dropbox/ $LOGPATH
 	$ADB_DEVICE shell rm -f /data/tombstones/*
 	$ADB_DEVICE shell rm -f /data/system/dropbox/*
 	$ADB_DEVICE shell /system/bin/screencap -p /sdcard/screenshot.png
@@ -172,8 +178,9 @@ else
 			echo "****run monkey with specified seed" $MONKEY_SEED "*****"
 		fi
         DATETIME=`date +%Y%m%d-%H%M%S`
-        nohup $ADB_DEVICE logcat > logcat_$DATETIME.log &
-		$ADB_DEVICE shell monkey --pkg-blacklist-file /data/blacklist.txt --pct-trackball 0 $MONKEY_SEED -v -v -v $RUN_TIME > monkey_log_$DATETIME.txt
+        nohup $ADB_DEVICE logcat *:W > logcat_$DATETIME.log &
+#--pct-touch 18 --pct-motion 12 --pct-pinchzoom 2 --pct-trackball 0 --pct-nav 30 --pct-majornav 18 --pct-syskeys 2 --pct-appswitch 2 --pct-flip 1 --pct-anyevent 15 --throttle 50
+		$ADB_DEVICE shell monkey --pkg-blacklist-file /data/blacklist.txt --pct-majornav 40 --pct-nav 30 --pct-syskeys 20 --throttle 50 --pct-appswitch 5 --pct-anyevent 5 $MONKEY_SEED -v -v -v $RUN_TIME > monkey_log_$DATETIME.txt
 		# analyse monkey log, figure out error catagory and pull log to pc
 		echo "*****analyse monkey log*****"
 		RANDOM_SEED=$(cat monkey_log_$DATETIME.txt | grep -o 'seed=[0-9]*' | cut -d = -f 2)
