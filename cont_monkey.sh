@@ -79,7 +79,9 @@ function pullLogAndRemove(){
 	$ADB_DEVICE shell rm -f /data/system/dropbox/*
 	$ADB_DEVICE shell /system/bin/screencap -p /sdcard/screenshot.png
 	$ADB_DEVICE pull /sdcard/screenshot.png $LOGPATH
-    mv logcat_$DATETIME.log $LOGPATH
+    mv main_log_$DATETIME.log $LOGPATH
+    mv event_log_$DATETIME.log $LOGPATH
+    mv dumpstate_$DATETIME.log $LOGPATH
 }
 
 
@@ -178,9 +180,11 @@ else
 			echo "****run monkey with specified seed" $MONKEY_SEED "*****"
 		fi
         DATETIME=`date +%Y%m%d-%H%M%S`
-        nohup $ADB_DEVICE logcat *:W > logcat_$DATETIME.log &
+        nohup $ADB_DEVICE logcat *:W > main_log_$DATETIME.log &
+        nohup $ADB_DEVICE logcat -b events -v time > event_log_$DATETIME.log &
 #--pct-touch 18 --pct-motion 12 --pct-pinchzoom 2 --pct-trackball 0 --pct-nav 30 --pct-majornav 18 --pct-syskeys 2 --pct-appswitch 2 --pct-flip 1 --pct-anyevent 15 --throttle 50
 		$ADB_DEVICE shell monkey --pkg-blacklist-file /data/blacklist.txt --pct-majornav 40 --pct-nav 30 --pct-syskeys 20 --throttle 50 --pct-appswitch 5 --pct-anyevent 5 $MONKEY_SEED -v -v -v $RUN_TIME > monkey_log_$DATETIME.txt
+        $ADB_DEVICE shell dumpstate > dumpstate_$DATETIME.log
 		# analyse monkey log, figure out error catagory and pull log to pc
 		echo "*****analyse monkey log*****"
 		RANDOM_SEED=$(cat monkey_log_$DATETIME.txt | grep -o 'seed=[0-9]*' | cut -d = -f 2)
