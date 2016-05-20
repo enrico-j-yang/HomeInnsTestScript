@@ -29,7 +29,7 @@ function anrCat(){
 	echo *****error cause:ANR*****
 	mkdir -p ANR
 	cd ANR
-	ERROR_POS=$(echo $ERROR_INFO | cut -d \/ -f 2 | cut -d \) -f 1 | cut -d . -f 2 | awk '{print ${NF}}')
+	ERROR_POS=$(echo $ERROR_INFO | cut -d \/ -f 2 | cut -d \) -f 1 | awk -F . '{print $NF}')
 	ERROR_MODULE=$(echo $ERROR_INFO | awk '{print $3}')
 	mkdir -p $ERROR_MODULE
 	cd $ERROR_MODULE
