@@ -12,7 +12,6 @@ function normalCat(){
 	echo *****normal finish*****
 	mkdir -p normal
 	LOGPATH=normal/
-	mv monkey_log_$DATETIME.txt $LOGPATH
 }
 
 function unknownCat(){
@@ -22,7 +21,6 @@ function unknownCat(){
 	mkdir -p $DATETIME
 	cd ..
 	LOGPATH=unknown/$DATETIME/
-	mv monkey_log_$DATETIME.txt $LOGPATH
 }
 
 function anrCat(){
@@ -40,7 +38,6 @@ function anrCat(){
 	cd ..
 	cd ..
 	LOGPATH=ANR/$ERROR_MODULE/$ERROR_POS/$DATETIME/
-	mv monkey_log_$DATETIME.txt $LOGPATH
 }
 
 function crashCat(){
@@ -61,29 +58,75 @@ function crashCat(){
 		cd ..
 		cd ..
 		LOGPATH=CRASH/$ERROR_MODULE/$ERROR_POS/$DATETIME/
-		mv monkey_log_$DATETIME.txt $LOGPATH
 	fi
 }
 
-function pullLogAndRemove(){
-    $ADB_DEVICE pull /data/system/dropbox/ $LOGPATH
-    cd $LOGPATH
-    mkdir -p log
-    cp *_anr* *_crash* log/
-    rm *
-    cp log/* .
-    rm -rf log/
-    cd -
+function moveMonkeyLog(){
+	FILE_SIZE=$(wc -c monkey_log_$DATETIME.txt | awk '{print int($1/1024/1024)}')
+	#echo 'FILE_SIZE:'$FILE_SIZE
+	if test $FILE_SIZE -gt 10 
+	then
+		zip monkey_log_$DATETIME.zip monkey_log_$DATETIME.txt
+		mv monkey_log_$DATETIME.zip $LOGPATH
+		rm monkey_log_$DATETIME.txt
+	else
+		mv monkey_log_$DATETIME.txt $LOGPATH
+	fi
+    
+}
+
+function pullLogAndMove(){
+	$ADB_DEVICE pull /data/system/dropbox/ $LOGPATH
+	cd $LOGPATH
+	mkdir -p log
+	cp -f *_anr* *_crash* log/
+	rm *@*
+	cp -f log/* .
+	rm -rf log
+	cd -
 	$ADB_DEVICE pull /data/tombstones/ $LOGPATH
 	$ADB_DEVICE shell rm -f /data/tombstones/*
 	$ADB_DEVICE shell rm -f /data/system/dropbox/*
 	$ADB_DEVICE shell /system/bin/screencap -p /sdcard/screenshot.png
 	$ADB_DEVICE pull /sdcard/screenshot.png $LOGPATH
-    mv main_log_$DATETIME.log $LOGPATH
-    mv event_log_$DATETIME.log $LOGPATH
-    mv dumpstate_$DATETIME.log $LOGPATH
+
+#echo $PWD
+	FILE_SIZE=$(wc -c main_log_$DATETIME.txt | awk '{print int($1/1024/1024)}')
+	#echo 'FILE_SIZE:'$FILE_SIZE
+	if test $FILE_SIZE -gt 10 
+	then
+		zip main_log_$DATETIME.zip main_log_$DATETIME.txt
+		mv main_log_$DATETIME.zip $LOGPATH
+		rm main_log_$DATETIME.txt
+	else
+		mv main_log_$DATETIME.txt $LOGPATH
+	fi
+	FILE_SIZE=$(wc -c event_log_$DATETIME.txt | awk '{print int($1/1024/1024)}')
+	#echo 'FILE_SIZE:'$FILE_SIZE
+	if test $FILE_SIZE -gt 10 
+	then
+		zip event_log_$DATETIME.zip event_log_$DATETIME.txt
+		mv event_log_$DATETIME.zip $LOGPATH
+		rm event_log_$DATETIME.txt
+	else
+		mv event_log_$DATETIME.txt $LOGPATH
+	fi
+
 }
 
+function dumpstateAndMove(){
+FILE_SIZE=$(wc -c dumpstate_$DATETIME.txt | awk '{print int($1/1024/1024)}')
+#echo 'FILE_SIZE:'$FILE_SIZE
+if test $FILE_SIZE -gt 10
+then
+zip dumpstate_$DATETIME.zip dumpstate_$DATETIME.txt
+mv dumpstate_$DATETIME.zip $LOGPATH
+rm dumpstate_$DATETIME.txt
+else
+mv dumpstate_$DATETIME.txt $LOGPATH
+fi
+
+}
 
 while getopts "r:n:l:s:" arg
 do
@@ -103,7 +146,7 @@ do
 		if test -z "$DATETIME"
 		then
 			DEVICE_SN=$OPTARG
-			ADB_DEVICE=“adb -s “$DEVICE_SN
+			ADB_DEVICE="adb -s "$DEVICE_SN
 		fi
 		#echo 'DEVICE_SN:'$DEVICE_SN
 	;;
@@ -143,14 +186,17 @@ then
 	ERROR_INFO=$(cat monkey_log_$DATETIME.txt | grep 'ANR in')
 	if test -n "$ERROR_INFO" ;then
 		anrCat
+		moveMonkeyLog
 	fi
 	if test -z "$ERROR_INFO" ;then
 		ERROR_INFO=$(cat monkey_log_$DATETIME.txt | grep 'CRASH:')
 		if test -n "$ERROR_INFO" ;then
 			crashCat
+			moveMonkeyLog
 		fi
 		if test -z "$ERROR_INFO" ;then
 			normalCat
+			moveMonkeyLog
 		fi
 	fi
 
@@ -179,12 +225,12 @@ else
 		if test -n "$MONKEY_SEED" ;then
 			echo "****run monkey with specified seed" $MONKEY_SEED "*****"
 		fi
-        DATETIME=`date +%Y%m%d-%H%M%S`
-        nohup $ADB_DEVICE logcat *:W > main_log_$DATETIME.log &
-        nohup $ADB_DEVICE logcat -b events -v time > event_log_$DATETIME.log &
-#--pct-touch 18 --pct-motion 12 --pct-pinchzoom 2 --pct-trackball 0 --pct-nav 30 --pct-majornav 18 --pct-syskeys 2 --pct-appswitch 2 --pct-flip 1 --pct-anyevent 15 --throttle 50
+		DATETIME=`date +%Y%m%d-%H%M%S`
+		nohup $ADB_DEVICE logcat *:W > main_log_$DATETIME.txt &
+		nohup $ADB_DEVICE logcat -b events -v time > event_log_$DATETIME.txt &
+		#--pct-touch 18 --pct-motion 12 --pct-pinchzoom 2 --pct-trackball 0 --pct-nav 30 --pct-majornav 18 --pct-syskeys 2 --pct-appswitch 2 --pct-flip 1 --pct-anyevent 15 --throttle 50
 		$ADB_DEVICE shell monkey --pkg-blacklist-file /data/blacklist.txt --pct-majornav 40 --pct-nav 30 --pct-syskeys 20 --throttle 50 --pct-appswitch 5 --pct-anyevent 5 $MONKEY_SEED -v -v -v $RUN_TIME > monkey_log_$DATETIME.txt
-        $ADB_DEVICE shell dumpstate > dumpstate_$DATETIME.log
+
 		# analyse monkey log, figure out error catagory and pull log to pc
 		echo "*****analyse monkey log*****"
 		RANDOM_SEED=$(cat monkey_log_$DATETIME.txt | grep -o 'seed=[0-9]*' | cut -d = -f 2)
@@ -192,7 +238,9 @@ else
 		if test -z "$EVENT_COUNT" ;then
 			EVENT_COUNT=0
 			unknownCat
-			pullLogAndRemove
+            moveMonkeyLog
+            $ADB_DEVICE shell dumpstate > dumpstate_$DATETIME.txt
+			pullLogAndMove
 		fi
 		echo 'random seed:'$RANDOM_SEED
 		echo 'event count:'$EVENT_COUNT
@@ -201,17 +249,24 @@ else
 		ERROR_INFO=$(cat monkey_log_$DATETIME.txt | grep 'ANR in')
 		if test -n "$ERROR_INFO" ;then
 			anrCat
-			pullLogAndRemove
+            moveMonkeyLog
+            pullLogAndMove
+            $ADB_DEVICE shell dumpstate > dumpstate_$DATETIME.txt
+            dumpstateAndMove
 		fi
 		if test -z "$ERROR_INFO" ;then
 			ERROR_INFO=$(cat monkey_log_$DATETIME.txt | grep 'CRASH:')
 			if test -n "$ERROR_INFO" ;then
 				crashCat
-				pullLogAndRemove
+                moveMonkeyLog
+                pullLogAndMove
+                $ADB_DEVICE shell dumpstate > dumpstate_$DATETIME.txt
+                dumpstateAndMove
 			fi
 			if test -z "$ERROR_INFO" ;then
 				normalCat
-                pullLogAndRemove
+                moveMonkeyLog
+				pullLogAndMove
 			fi
 		fi
 
