@@ -1,0 +1,5 @@
+com.android.settings
+com.android.mms
+com.android.contacts
+com.gexne.car.factorytest
+com.gexne.car.pbatest
