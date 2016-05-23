@@ -64,7 +64,7 @@ function crashCat(){
 function moveMonkeyLog(){
 	FILE_SIZE=$(wc -c monkey_log_$DATETIME.txt | awk '{print int($1/1024/1024)}')
 	#echo 'FILE_SIZE:'$FILE_SIZE
-	if test $FILE_SIZE -gt 10 
+	if test $FILE_SIZE -gt 10
 	then
 		zip monkey_log_$DATETIME.zip monkey_log_$DATETIME.txt
 		mv monkey_log_$DATETIME.zip $LOGPATH
@@ -72,7 +72,7 @@ function moveMonkeyLog(){
 	else
 		mv monkey_log_$DATETIME.txt $LOGPATH
 	fi
-    
+
 }
 
 function pullLogAndMove(){
@@ -90,10 +90,10 @@ function pullLogAndMove(){
 	$ADB_DEVICE shell /system/bin/screencap -p /sdcard/screenshot.png
 	$ADB_DEVICE pull /sdcard/screenshot.png $LOGPATH
 
-#echo $PWD
+	#echo $PWD
 	FILE_SIZE=$(wc -c main_log_$DATETIME.txt | awk '{print int($1/1024/1024)}')
 	#echo 'FILE_SIZE:'$FILE_SIZE
-	if test $FILE_SIZE -gt 10 
+	if test $FILE_SIZE -gt 10
 	then
 		zip main_log_$DATETIME.zip main_log_$DATETIME.txt
 		mv main_log_$DATETIME.zip $LOGPATH
@@ -103,7 +103,7 @@ function pullLogAndMove(){
 	fi
 	FILE_SIZE=$(wc -c event_log_$DATETIME.txt | awk '{print int($1/1024/1024)}')
 	#echo 'FILE_SIZE:'$FILE_SIZE
-	if test $FILE_SIZE -gt 10 
+	if test $FILE_SIZE -gt 10
 	then
 		zip event_log_$DATETIME.zip event_log_$DATETIME.txt
 		mv event_log_$DATETIME.zip $LOGPATH
@@ -115,16 +115,16 @@ function pullLogAndMove(){
 }
 
 function dumpstateAndMove(){
-FILE_SIZE=$(wc -c dumpstate_$DATETIME.txt | awk '{print int($1/1024/1024)}')
-#echo 'FILE_SIZE:'$FILE_SIZE
-if test $FILE_SIZE -gt 10
-then
-zip dumpstate_$DATETIME.zip dumpstate_$DATETIME.txt
-mv dumpstate_$DATETIME.zip $LOGPATH
-rm dumpstate_$DATETIME.txt
-else
-mv dumpstate_$DATETIME.txt $LOGPATH
-fi
+	FILE_SIZE=$(wc -c dumpstate_$DATETIME.txt | awk '{print int($1/1024/1024)}')
+	#echo 'FILE_SIZE:'$FILE_SIZE
+	if test $FILE_SIZE -gt 10
+	then
+		zip dumpstate_$DATETIME.zip dumpstate_$DATETIME.txt
+		mv dumpstate_$DATETIME.zip $LOGPATH
+		rm dumpstate_$DATETIME.txt
+	else
+		mv dumpstate_$DATETIME.txt $LOGPATH
+	fi
 
 }
 
@@ -238,9 +238,10 @@ else
 		if test -z "$EVENT_COUNT" ;then
 			EVENT_COUNT=0
 			unknownCat
-            moveMonkeyLog
-            $ADB_DEVICE shell dumpstate > dumpstate_$DATETIME.txt
+			moveMonkeyLog
 			pullLogAndMove
+			$ADB_DEVICE shell dumpstate > dumpstate_$DATETIME.txt
+			dumpstateAndMove
 		fi
 		echo 'random seed:'$RANDOM_SEED
 		echo 'event count:'$EVENT_COUNT
@@ -249,23 +250,23 @@ else
 		ERROR_INFO=$(cat monkey_log_$DATETIME.txt | grep 'ANR in')
 		if test -n "$ERROR_INFO" ;then
 			anrCat
-            moveMonkeyLog
-            pullLogAndMove
-            $ADB_DEVICE shell dumpstate > dumpstate_$DATETIME.txt
-            dumpstateAndMove
+			moveMonkeyLog
+			pullLogAndMove
+			$ADB_DEVICE shell dumpstate > dumpstate_$DATETIME.txt
+			dumpstateAndMove
 		fi
 		if test -z "$ERROR_INFO" ;then
 			ERROR_INFO=$(cat monkey_log_$DATETIME.txt | grep 'CRASH:')
 			if test -n "$ERROR_INFO" ;then
 				crashCat
-                moveMonkeyLog
-                pullLogAndMove
-                $ADB_DEVICE shell dumpstate > dumpstate_$DATETIME.txt
-                dumpstateAndMove
+				moveMonkeyLog
+				pullLogAndMove
+				$ADB_DEVICE shell dumpstate > dumpstate_$DATETIME.txt
+				dumpstateAndMove
 			fi
 			if test -z "$ERROR_INFO" ;then
 				normalCat
-                moveMonkeyLog
+				moveMonkeyLog
 				pullLogAndMove
 			fi
 		fi
