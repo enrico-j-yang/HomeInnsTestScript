@@ -158,11 +158,12 @@ do
 		#echo 'MONKEY_SEED:'$MONKEY_SEED
 	;;
 	? ) echo usage:
-		echo script will run 1 time if no arg found
-		echo -l \<monkey log file\ >				- analyse monkey log file. log file name should be monkey_log_yyyymmdd-hhmmss.txt
-		echo -r \<monkey event count\ >			- specified monkey test event count
-		echo -n \<device hardware sn\ >			- specified device sn for ads
-		echo -s \<monkey test seed\ >				- specified monkey test seed
+		echo 'script will run 1 time if no arg found'
+        echo 
+		echo '-l \<monkey log file\ >				- analyse monkey log file. log file name should be monkey_log_yyyymmdd-hhmmss.txt'
+		echo '-r \<monkey event count\ >			- specified monkey test event count'
+		echo '-n \<device hardware sn\ >			- specified device sn for ads'
+		echo '-s \<monkey test seed\ >				- specified monkey test seed'
 		exit 1
 	;;
 	esac
@@ -210,6 +211,22 @@ else
 
 	while test $EVENT_EXERCUTED -lt $RUN_TIME
 	do
+        # set volume to 1 so as to prevent fm annoying sound
+        for((i=1;i<=5;i++))
+        do
+            $ADB_DEVICE shell input keyevent 4
+        done
+        $ADB_DEVICE shell input keyevent 66
+        $ADB_DEVICE shell input keyevent 21
+        $ADB_DEVICE shell input keyevent 21
+        $ADB_DEVICE shell input keyevent 21
+        $ADB_DEVICE shell input keyevent 66
+        $ADB_DEVICE shell input keyevent 66
+        for((i=1;i<=15;i++))
+        do
+            $ADB_DEVICE shell input keyevent 21
+        done
+        $ADB_DEVICE shell input keyevent 22
 		# reboot devices for next run
 		echo "*****reboot device*****"
 		$ADB_DEVICE kill-server
@@ -229,7 +246,8 @@ else
 		nohup $ADB_DEVICE logcat *:W > main_log_$DATETIME.txt &
 		nohup $ADB_DEVICE logcat -b events -v time > event_log_$DATETIME.txt &
 		#--pct-touch 18 --pct-motion 12 --pct-pinchzoom 2 --pct-trackball 0 --pct-nav 30 --pct-majornav 18 --pct-syskeys 2 --pct-appswitch 2 --pct-flip 1 --pct-anyevent 15 --throttle 50
-		$ADB_DEVICE shell monkey --pkg-blacklist-file /data/blacklist.txt --pct-majornav 40 --pct-nav 30 --pct-syskeys 20 --throttle 50 --pct-appswitch 5 --pct-anyevent 5 $MONKEY_SEED -v -v -v $RUN_TIME > monkey_log_$DATETIME.txt
+$ADB_DEVICE shell monkey --pkg-blacklist-file /data/blacklist.txt --pct-touch 0 --pct-trackball 0 --throttle 50 $MONKEY_SEED -v -v -v $RUN_TIME > monkey_log_$DATETIME.txt
+#$ADB_DEVICE shell monkey --pkg-blacklist-file /data/blacklist.txt --pct-majornav 40 --pct-nav 30 --pct-syskeys 20 --throttle 50 --pct-appswitch 5 --pct-anyevent 5 $MONKEY_SEED -v -v -v $RUN_TIME > monkey_log_$DATETIME.txt
 
 		# analyse monkey log, figure out error catagory and pull log to pc
 		echo "*****analyse monkey log*****"
