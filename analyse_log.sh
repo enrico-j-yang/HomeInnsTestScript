@@ -22,8 +22,8 @@ echo $ERROR_POS
     cd ..
     cd ..
     LOGPATH=$LOGPATH/WTF/$ERROR_MODULE/$ERROR_POS
-echo $LOG_FILE $LOGPATH/
-    mv $LOG_FILE $LOGPATH/
+#echo $LOG_FILE $LOGPATH
+    mv $LOG_FILE $LOGPATH
 }
 
 function unknownCat(){
@@ -32,8 +32,8 @@ function unknownCat(){
 	cd unknown
     cd ..
 	LOGPATH=unknown
-#echo $LOG_FILE $LOGPATH/
-	mv $LOG_FILE $LOGPATH/
+#echo $LOG_FILE $LOGPATH
+	mv $LOG_FILE $LOGPATH
 }
 
 function anrCat(){
@@ -43,10 +43,15 @@ function anrCat(){
 	cd ANR
     ERROR_MODULE=$(cat ../../$LOG_FILE | grep Package: | head -1 | awk '{print $2}')
     ERROR_POS=$(cat ../../$LOG_FILE | grep .java | head -1 | awk '{print $2}')
-    #echo $ERROR_MODULE
-    #echo $ERROR_POS
+    if test -z "$ERROR_POS"
+    then
+        ERROR_POS=$(cat ../../$LOG_FILE | grep 'Cmd line:'  | head -1 | awk '{print $3}' | cut -d / -f 3)
+    fi
+    echo $ERROR_MODULE
+    echo $ERROR_POS
     mkdir -p $ERROR_MODULE
 	cd $ERROR_MODULE
+
 	mkdir -p $ERROR_POS
 	cd $ERROR_POS
     cd ..
@@ -54,8 +59,8 @@ function anrCat(){
     cd ..
     cd ..
     LOGPATH=$LOGPATH/ANR/$ERROR_MODULE/$ERROR_POS
-    #echo $LOG_FILE $LOGPATH/
-    mv $LOG_FILE $LOGPATH/
+    #echo $LOG_FILE $LOGPATH
+    mv $LOG_FILE $LOGPATH
 }
 
 function crashCat(){
@@ -80,8 +85,8 @@ echo $ERROR_POS
     cd ..
     cd ..
     LOGPATH=$LOGPATH/CRASH/$ERROR_MODULE/$ERROR_POS
-#echo $LOG_FILE $LOGPATH/
-    mv $LOG_FILE $LOGPATH/
+#echo $LOG_FILE $LOGPATH
+    mv $LOG_FILE $LOGPATH
 }
 
 for i in *.txt
