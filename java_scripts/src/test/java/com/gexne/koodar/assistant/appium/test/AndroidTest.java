@@ -65,7 +65,7 @@ public class AndroidTest {
 			assertNotNull(phone_number);
 			phone_number.sendKeys("13824470628");
 			WebElement password = driver.findElementById("com.gexne.car.assistant:id/login_password");
-			password.sendKeys(" ");// because send_keys miss first character, so
+			password.click();// because send_keys miss first character, so
 									// here come one blank as to avoid this
 									// problem
 			password.sendKeys("ygvuhbijn");
