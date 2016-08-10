@@ -99,6 +99,7 @@ public class AndroidTest {
 				}
 			});
 			driver.findElementsByClassName("android.widget.LinearLayout").get(1).click();
+			
 
 			try {
 				Thread.sleep(thinkTimeMillis);

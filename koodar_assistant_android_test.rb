@@ -10,17 +10,18 @@ require 'test/unit'
 require 'rubygems'
 
 class KoodarAssistantTest < Test::Unit::TestCase
+  
   def setup
-    caps   = { caps:       { platformName: 'Android', deviceName: 'Android Machine', appActivity: '.Calculator', appPackage: 'com.android.calculator2', autoLaunch: 'false' },
+    caps   = { caps:       { platformName: 'Android', deviceName: 'Android Machine', appActivity: 'systems.xos.car.android.product.companion.startup.SplashActivity', appPackage: 'com.gexne.car.assistant', autoLaunch: 'false' },
                appium_lib: { sauce_username: nil, sauce_access_key: nil } }
     @dr = Appium::Driver.new(caps).start_driver
     Appium.promote_appium_methods self.class
-    @wait = Selenium::WebDriver::Wait.new({:timeout => 3})
+    @wait = Selenium::WebDriver::Wait.new({:timeout => 5})
+    @think_time = 2
   end
   
   def teardown
-    #sleep 3
-    #@dr.quit
+    #sleep @think_time
     driver_quit
   end
   
@@ -32,7 +33,8 @@ class KoodarAssistantTest < Test::Unit::TestCase
       puts "HUD Assistant not installed"
     end
 
-    #puts @dr.current_activity
+    sleep @think_time
+    puts @dr.current_activity
     #sleep 3
     
     #puts  @dr.find_element(:id, 'com.gexne.car.assistant:id/root').displayed?
@@ -55,11 +57,10 @@ class KoodarAssistantTest < Test::Unit::TestCase
         # Log in    
         phone_number.clear()
         phone_number.send_keys('13824470628')
-        @dr.find_element(id: 'com.gexne.car.assistant:id/login_password').clear
-        @dr.find_element(id: 'com.gexne.car.assistant:id/login_password').send_keys(' ')
+        @dr.find_element(id: 'com.gexne.car.assistant:id/login_password').click
         @dr.find_element(id: 'com.gexne.car.assistant:id/login_password').send_keys('ygvuhbijn')
 
-        sleep 2
+        sleep @think_time
 
         @dr.find_element(id: 'com.gexne.car.assistant:id/login_next').click
       end
