@@ -65,8 +65,11 @@ class KoodarAssistantAndroidTests(unittest.TestCase):
             # input account and password
             phone_number = self.driver.find_element_by_id('com.gexne.car.assistant:id/login_phone_number')
             self.assertTrue(phone_number)
-            #print self.driver.available_ime_engines
-            #self.driver.activate_ime_engine(u'com.google.android.inputmethod.pinyin/.PinyinIME')
+            # switch to non-appium ime in order to avoid send_keys ramdom error for numbers and english charactors
+            # please be noticed that ime must be switch appium unicdoe ime for inputing Chinese charactor
+            for i in [1, len(imes)]:
+                if imes[i - 1] != "io.appium.android.ime/.UnicodeIME":
+                    self.driver.activate_ime_engine(imes[i - 1])
             phone_number.send_keys(u"13824470628")
             password = self.driver.find_element_by_id('com.gexne.car.assistant:id/login_password')
             self.assertTrue(password)
@@ -80,7 +83,7 @@ class KoodarAssistantAndroidTests(unittest.TestCase):
             print "*****wait for login activity time out*****"
                 
             
-    @unittest.skip("demostrating skipping")
+    #@unittest.skip("demostrating skipping")
     def test_login(self):
         print "test_login"
 
@@ -100,11 +103,16 @@ class KoodarAssistantAndroidTests(unittest.TestCase):
         try:
             phone_number = self.driver.find_element_by_id('com.gexne.car.assistant:id/login_phone_number')
             self.assertTrue(phone_number)
-            phone_number.send_keys('13824470628')
+            # switch to non-appium ime in order to avoid send_keys ramdom error for numbers and english charactors
+            # please be noticed that ime must be switch appium unicdoe ime for inputing Chinese charactor
+            for i in [1, len(imes)]:
+                if imes[i - 1] != "io.appium.android.ime/.UnicodeIME":
+                    self.driver.activate_ime_engine(imes[i - 1])
+            phone_number.send_keys(u'13824470628')
             password = self.driver.find_element_by_id('com.gexne.car.assistant:id/login_password')
             self.assertTrue(password)
             self.touchAction.press(password).release().perform() # because send_keys miss first character, so here come one blank as to avoid this problem
-            password.send_keys('ygvuhbijn')
+            password.send_keys(u'ygvuhbijn')
             sleep(self.__think_time)
             login = self.driver.find_element_by_id('com.gexne.car.assistant:id/login_next')
             self.assertTrue(login)
@@ -121,7 +129,7 @@ class KoodarAssistantAndroidTests(unittest.TestCase):
         self.assertTrue('systems.xos.car.android.product.companion.MainActivity' == self.driver.current_activity)
             
     
-    @unittest.skip("demostrating skipping")
+    #@unittest.skip("demostrating skipping")
     def test_logout(self):
         print "test_logout"
         self.__common_login()
@@ -159,7 +167,7 @@ class KoodarAssistantAndroidTests(unittest.TestCase):
 
         self.assertTrue('systems.xos.car.android.product.companion.startup.login.LoginActivity' == self.driver.current_activity)
                 
-    #@unittest.skip("demostrating skipping")
+    @unittest.skip("demostrating skipping")
     def test_navigation(self):
         print "test_navigation"
         self.__common_login()
@@ -181,7 +189,7 @@ class KoodarAssistantAndroidTests(unittest.TestCase):
         search_edit = self.driver.find_element_by_id("com.gexne.car.assistant:id/search_edt")
         self.assertTrue(search_edit)
         self.touchAction.tap(search_edit)
-        #self.driver.activate_ime_engine("io.appium.android.ime/.UnicodeIME")
+        self.driver.activate_ime_engine("io.appium.android.ime/.UnicodeIME")
         search_edit.send_keys(u"广州")
         search_btn = self.driver.find_element_by_id("com.gexne.car.assistant:id/search_btn")
         self.assertTrue(search_btn)
