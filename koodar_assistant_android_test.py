@@ -67,6 +67,7 @@ class KoodarAssistantAndroidTests(unittest.TestCase):
             self.assertTrue(phone_number)
             # switch to non-appium ime in order to avoid send_keys ramdom error for numbers and english charactors
             # please be noticed that ime must be switch appium unicdoe ime for inputing Chinese charactor
+            imes = self.driver.available_ime_engines
             for i in [1, len(imes)]:
                 if imes[i - 1] != "io.appium.android.ime/.UnicodeIME":
                     self.driver.activate_ime_engine(imes[i - 1])
@@ -105,6 +106,7 @@ class KoodarAssistantAndroidTests(unittest.TestCase):
             self.assertTrue(phone_number)
             # switch to non-appium ime in order to avoid send_keys ramdom error for numbers and english charactors
             # please be noticed that ime must be switch appium unicdoe ime for inputing Chinese charactor
+            imes = self.driver.available_ime_engines
             for i in [1, len(imes)]:
                 if imes[i - 1] != "io.appium.android.ime/.UnicodeIME":
                     self.driver.activate_ime_engine(imes[i - 1])
@@ -167,7 +169,7 @@ class KoodarAssistantAndroidTests(unittest.TestCase):
 
         self.assertTrue('systems.xos.car.android.product.companion.startup.login.LoginActivity' == self.driver.current_activity)
                 
-    @unittest.skip("demostrating skipping")
+    #@unittest.skip("demostrating skipping")
     def test_navigation(self):
         print "test_navigation"
         self.__common_login()
