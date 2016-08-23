@@ -9,9 +9,9 @@ import unittest
 from appium import webdriver
 from appium.webdriver.common.touch_action import TouchAction
 from appium.webdriver.common.multi_action import MultiAction
-from koodar_android_assistant_login_test import KoodarAndroidAssistantLoginTests
-from koodar_android_assistant_navigation_test import KoodarAndroidAssistantNavigationTests
-from koodar_android_assistant_my_account_test import KoodarAndroidAssistantMyAccountTests
+from assistant.android.login import KoodarAndroidAssistantLoginTests
+from assistant.android.account import KoodarAndroidAssistantMyAccountTests
+from assistant.android.navigation import KoodarAndroidAssistantNavigationTests
 
 # Returns abs path relative to this file and not cwd
 PATH = lambda p: os.path.abspath(

@@ -54,10 +54,38 @@ def test_step_info(func):
         return result
     return _func
 
+class UnknownStringException(Exception):
+    def __init__(self, value=None):
+        self.value = value
+
+class OutOfBoundException(Exception):
+    def __init__(self, value=None):
+        self.value = value
+
+class WrongDirectionException(Exception):
+    def __init__(self, value=None):
+        self.value = value
 
 class CommonTestStep(unittest.TestCase):
     def __init__(self):
         self.step = 0
+    
+    def __capture_element(self, what):
+        begin = what.location
+        size = what.size
+        start_x = begin['x']
+        start_y = begin['y']
+        end_x = start_x + size['width']
+        end_y = start_y + size['height']
+        name = str(start_x)+'_'+str(start_y)+'_'+'_'+str(end_x)+'_'+str(end_y)
+        box = (start_x, start_y, end_x, end_y)
+        self.driver.get_screenshot_as_file('./' + 'full_screen.png')
+        image = Image.open('./' + 'full_screen.png')        #tmp是临时文件夹
+        newimage = image.crop(box)
+        name = './' + name + '.png'
+        newimage.save(name)
+        os.popen('rm ./full_screen.png')   
+        return name, size
         
     def __pil_image_similarity(self, filepath1, filepath2):
         import math
@@ -76,9 +104,11 @@ class CommonTestStep(unittest.TestCase):
         return rms
         
     def __add_resolution_to_file_name(self, filename, resolution):
-        ref_image_true_name = filename[0:filename.rfind(".")]
-        ref_image_ext_name = filename[filename.rfind(".")+1:len(filename)]
+        os.path.splitext(filename)
+        ref_image_true_name = os.path.splitext(filename)[0]
         logging.debug("ref_image_true_name:%s", ref_image_true_name) 
+        ref_image_ext_name = os.path.splitext(filename)[1]
+        logging.debug("ref_image_ext_name:%s", ref_image_ext_name) 
         
         ref_image_height = resolution['height']
         logging.debug("ref_image_height:%s", ref_image_height) 
@@ -86,7 +116,7 @@ class CommonTestStep(unittest.TestCase):
         ref_image_width = resolution['width']
         logging.debug("ref_image_width:%s", ref_image_width) 
         
-        added_file_name = ref_image_true_name+'_'+str(ref_image_width)+'_'+str(ref_image_height)+'.'+ref_image_ext_name
+        added_file_name = ref_image_true_name+'_'+str(ref_image_width)+'_'+str(ref_image_height)+ref_image_ext_name
         logging.debug("added_file_name:%s", added_file_name)
          
         return added_file_name    
@@ -228,7 +258,7 @@ class CommonTestStep(unittest.TestCase):
         self.touchAction.long_press(widget, x, y, duration).release().perform()
         
     @test_step_info
-    def precise(self, string, x=0, y=0, duration=1000):
+    def precise_tap_widget(self, string, x=0, y=0, duration=1000, allowOutOfBound=False):
         widget = self.driver.find_element_by_string(string)
         lx = widget.location.get('x')
         ly = widget.location.get('y')
@@ -249,12 +279,16 @@ class CommonTestStep(unittest.TestCase):
         
         window_size = self.driver.get_window_size()
         logging.debug("window size %s %s", window_size["width"], window_size["height"])
-        
-        if (x>size['width'] or x<0
-        or y>size['height'] or y<0
-        or x+lx>window_size['width'] 
-        or y+ly>window_size['height']):
-            raise OutOfBoundException
+
+        try:
+            if (x>size['width'] or x<0
+            or y>size['height'] or y<0
+            or x+lx>window_size['width']
+            or y+ly>window_size['height']):
+                raise OutOfBoundException
+        except OutOfBoundException:
+            if not allowOutOfBound:
+                raise OutOfBoundException
             
         self.touchAction.press(widget, x+lx, y+ly).release().perform()
     
@@ -347,21 +381,4 @@ class CommonTestStep(unittest.TestCase):
             self.driver.swipe(50, size['height']/2, size['width'] - 50, size['height']/2, duration)
         else:
             raise WrongDirectionException
-    
-    def __capture_element(self, what):
-        begin = what.location
-        size = what.size
-        start_x = begin['x']
-        start_y = begin['y']
-        end_x = start_x + size['width']
-        end_y = start_y + size['height']
-        name = str(start_x)+'_'+str(start_y)+'_'+'_'+str(end_x)+'_'+str(end_y)
-        box = (start_x, start_y, end_x, end_y)
-        self.driver.get_screenshot_as_file('./' + 'full_screen.png')
-        image = Image.open('./' + 'full_screen.png')        #tmp是临时文件夹
-        newimage = image.crop(box)
-        name = './' + name + '.png'
-        newimage.save(name)
-        os.popen('rm ./full_screen.png')   
-        return name, size
             

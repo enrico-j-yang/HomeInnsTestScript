@@ -17,6 +17,7 @@ class KoodarAssistantTest < Test::Unit::TestCase
     @dr = Appium::Driver.new(caps).start_driver
     Appium.promote_appium_methods self.class
     @wait = Selenium::WebDriver::Wait.new({:timeout => 5})
+    @touch = Appium::TouchAction
     @think_time = 2
   end
   
@@ -67,6 +68,13 @@ class KoodarAssistantTest < Test::Unit::TestCase
     end 
     
     
+    @dr.find_element(:xpath, "//android.widget.LinearLayout[1]/android.widget.FrameLayout[1]/android.widget.LinearLayout[1]\
+    /android.widget.FrameLayout[1]/android.view.View[1]/android.support.v7.widget.RecyclerView[1]/android.widget.LinearLayout[2]").click
+    map = @dr.find_element(:xpath, "//android.widget.LinearLayout[1]/android.widget.FrameLayout[1]/android.widget.LinearLayout[1]\
+    /android.widget.FrameLayout[1]/android.widget.LinearLayout[1]/android.widget.RelativeLayout[1]")
+    
+    zoom 150 
+    pinch 75
     begin 
       @wait.until  { @dr.find_element(:id, 'com.gexne.car.assistant:id/recyclerView').displayed? }      
     rescue
