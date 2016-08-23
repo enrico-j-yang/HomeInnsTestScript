@@ -13,12 +13,20 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait  
 
-from common_test_step import CommonTestStep
+sys.path.append("../..")
+from common.common_test_step import CommonTestStep
 
 # Returns abs path relative to this file and not cwd
 PATH = lambda p: os.path.abspath(
     os.path.join(os.path.dirname(__file__), p)
 )
+
+try:
+    PATH.find("assistant/android/")
+except:
+    RESOURCE_PATH = "../resource/"
+else:
+    RESOURCE_PATH = "assistant/resource/"
 
 logging.basicConfig(level=logging.DEBUG,
                 format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
@@ -85,7 +93,7 @@ class KoodarAundroidAssistantNavigationAtomTests(unittest.TestCase):
         self.testStep.wait_widget("com.gexne.car.assistant:id/zoom_out_map_btn")
         
         
-    def test_navigation_search_and_push_destination(self):
+    def navigation_search_and_push_destination(self):
         # wait for map activity
         # gaode version is systems.xos.car.android.product.companion.navigation.MapActivity
         # baidu version is systems.xos.car.android.product.companion.map.MainMapActivity
@@ -108,7 +116,7 @@ class KoodarAundroidAssistantNavigationAtomTests(unittest.TestCase):
         self.testStep.tap_button("com.gexne.car.assistant:id/back_btn")
         
     
-    def test_navigation_add_to_favorate(self):
+    def navigation_add_to_favorate(self):
         # wait for map activity
         # gaode version is systems.xos.car.android.product.companion.navigation.MapActivity
         # baidu version is systems.xos.car.android.product.companion.map.MainMapActivity
@@ -118,12 +126,12 @@ class KoodarAundroidAssistantNavigationAtomTests(unittest.TestCase):
         self.testStep.input_textbox_uft8("com.gexne.car.assistant:id/search_edt", u"广州")
         self.testStep.tap_button("com.gexne.car.assistant:id/search_btn")
         self.testStep.wait_widget("//android.widget.TextView[contains(@text, '广州')]")
-        self.testStep.tap_widget_if_image_alike("//android.widget.LinearLayout[1]/android.widget.FrameLayout[1]/android.widget.LinearLayout[1]/android.widget.FrameLayout[1]/android.widget.LinearLayout[1]/android.widget.RelativeLayout[1]/android.support.v7.widget.RecyclerView[1]/android.widget.LinearLayout[2]/android.widget.RelativeLayout[1]/android.widget.ImageButton[1]", "not_fav.png", "fav.png")
+        self.testStep.tap_widget_if_image_alike("//android.widget.LinearLayout[1]/android.widget.FrameLayout[1]/android.widget.LinearLayout[1]/android.widget.FrameLayout[1]/android.widget.LinearLayout[1]/android.widget.RelativeLayout[1]/android.support.v7.widget.RecyclerView[1]/android.widget.LinearLayout[2]/android.widget.RelativeLayout[1]/android.widget.ImageButton[1]", RESOURCE_PATH+"not_fav.png", RESOURCE_PATH+"fav.png")
         self.testStep.tap_widget("com.gexne.car.assistant:id/favorite_btn")
         self.testStep.wait_widget("//android.widget.TextView[contains(@text, '广州')]")
         self.testStep.tap_button("//android.widget.LinearLayout[1]/android.widget.FrameLayout[1]/android.widget.LinearLayout[1]/android.widget.FrameLayout[1]/android.widget.LinearLayout[1]/android.view.View[1]/android.widget.ImageButton[1]")
     
-    def test_navigation_delete_from_favorate_list(self):
+    def navigation_delete_from_favorate_list(self):
         # wait for map activity
         # gaode version is systems.xos.car.android.product.companion.navigation.MapActivity
         # baidu version is systems.xos.car.android.product.companion.map.MainMapActivity
@@ -133,15 +141,15 @@ class KoodarAundroidAssistantNavigationAtomTests(unittest.TestCase):
         self.testStep.tap_widget("com.gexne.car.assistant:id/favorite_btn")
         self.testStep.wait_widget("//android.widget.TextView[contains(@text, '广州')]")
         self.testStep.long_tap_widget("//android.widget.TextView[contains(@text, '广州')]")
-        self.testStep.precise_tap_widget("//android.widget.TextView[contains(@text, '广州')]", "middle", 50)
+        self.testStep.precise_tap_widget("//android.widget.TextView[contains(@text, '广州')]", "middle", 50, 1000, True)
         self.testStep.tap_button("//android.widget.LinearLayout[1]/android.widget.FrameLayout[1]/android.widget.LinearLayout[1]/android.widget.FrameLayout[1]/android.widget.LinearLayout[1]/android.view.View[1]/android.widget.ImageButton[1]")
     
         self.testStep.input_textbox_uft8("com.gexne.car.assistant:id/search_edt", u"广州")
         self.testStep.tap_button("com.gexne.car.assistant:id/search_btn")
         self.testStep.wait_widget("//android.widget.TextView[contains(@text, '广州')]")
-        self.testStep.check_widget_if_image_alike("//android.widget.LinearLayout[1]/android.widget.FrameLayout[1]/android.widget.LinearLayout[1]/android.widget.FrameLayout[1]/android.widget.LinearLayout[1]/android.widget.RelativeLayout[1]/android.support.v7.widget.RecyclerView[1]/android.widget.LinearLayout[2]/android.widget.RelativeLayout[1]/android.widget.ImageButton[1]", "fav.png")
+        self.testStep.check_widget_if_image_alike("//android.widget.LinearLayout[1]/android.widget.FrameLayout[1]/android.widget.LinearLayout[1]/android.widget.FrameLayout[1]/android.widget.LinearLayout[1]/android.widget.RelativeLayout[1]/android.support.v7.widget.RecyclerView[1]/android.widget.LinearLayout[2]/android.widget.RelativeLayout[1]/android.widget.ImageButton[1]", RESOURCE_PATH+"fav.png")
     
-    def test_navigation_not_exist(self):
+    def navigation_not_exist(self):
         # wait for map activity
         # gaode version is systems.xos.car.android.product.companion.navigation.MapActivity
         # baidu version is systems.xos.car.android.product.companion.map.MainMapActivity
@@ -153,7 +161,7 @@ class KoodarAundroidAssistantNavigationAtomTests(unittest.TestCase):
         # TODO toast detection should be done
         # Appium has no API to capture toast so that an alternative way is taking a screenshot and find content by ocr tool 
 
-    def test_navigation_smart_hints(self):
+    def navigation_smart_hints(self):
         # wait for map activity
         # gaode version is systems.xos.car.android.product.companion.navigation.MapActivity
         # baidu version is systems.xos.car.android.product.companion.map.MainMapActivity
@@ -163,7 +171,7 @@ class KoodarAundroidAssistantNavigationAtomTests(unittest.TestCase):
             
         self.testStep.swipe_widget("//android.widget.LinearLayout[1]/android.widget.FrameLayout[1]\
         /android.widget.LinearLayout[1]/android.widget.FrameLayout[1]/android.widget.LinearLayout[1]", "middle", 530, "middle", 177)#230, 580, 370, 227
-        self.testStep.presice_tap_widget("//android.widget.LinearLayout[1]/android.widget.FrameLayout[1]\
+        self.testStep.precise_tap_widget("//android.widget.LinearLayout[1]/android.widget.FrameLayout[1]\
         /android.widget.LinearLayout[1]/android.widget.FrameLayout[1]/android.widget.LinearLayout[1]", "middle", 540)
         
         self.testStep.wait_widget("//android.widget.TextView[contains(@text, '河')]")
@@ -179,7 +187,7 @@ class KoodarAundroidAssistantNavigationAtomTests(unittest.TestCase):
         self.testStep.tap_button("com.gexne.car.assistant:id/back_btn")
     
  
-    def test_navigation_search_history(self):
+    def navigation_search_history(self):
         # wait for map activity
         # gaode version is systems.xos.car.android.product.companion.navigation.MapActivity
         # baidu version is systems.xos.car.android.product.companion.map.MainMapActivity
@@ -196,7 +204,7 @@ class KoodarAundroidAssistantNavigationAtomTests(unittest.TestCase):
         self.common_enter_navigation(False) # enter navigation window without reset app
         
         self.testStep.tap_widget("com.gexne.car.assistant:id/search_edt")
-        self.testStep.presice_tap_widget("//android.widget.LinearLayout[1]/android.widget.FrameLayout[1]\
+        self.testStep.precise_tap_widget("//android.widget.LinearLayout[1]/android.widget.FrameLayout[1]\
         /android.widget.LinearLayout[1]/android.widget.FrameLayout[1]/android.widget.LinearLayout[1]", "middle", 180)
 
         self.testStep.wait_widget("//android.widget.TextView[contains(@text, '推送到')]")
@@ -213,7 +221,7 @@ class KoodarAundroidAssistantNavigationAtomTests(unittest.TestCase):
         self.testStep.tap_button("com.gexne.car.assistant:id/star_btn")
     
 
-    def test_navigation_choose_destination_on_map(self):
+    def navigation_choose_destination_on_map(self):
         
         try:
             self.testStep.long_tap_widget("com.gexne.car.assistant:id/parent_view")
@@ -233,13 +241,13 @@ class KoodarAundroidAssistantNavigationAtomTests(unittest.TestCase):
            
     # atom test function list here for random combination test 
     # make sure all all atom test tunction listed below
-    atom_test_list = {'test_navigation_search_and_push_destination':test_navigation_search_and_push_destination,
-       'test_navigation_add_to_favorate':test_navigation_add_to_favorate,
-       'test_navigation_delete_from_favorate_list':test_navigation_delete_from_favorate_list,
-       'test_navigation_choose_destination_on_map':test_navigation_choose_destination_on_map,
-       'test_navigation_smart_hints':test_navigation_smart_hints,
-       'test_navigation_search_history':test_navigation_search_history,
-       'test_navigation_not_exist':test_navigation_not_exist}    
+    atom_test_list = {'navigation_search_and_push_destination':navigation_search_and_push_destination,
+       'navigation_add_to_favorate':navigation_add_to_favorate,
+       'navigation_delete_from_favorate_list':navigation_delete_from_favorate_list,
+       'navigation_choose_destination_on_map':navigation_choose_destination_on_map,
+       'navigation_smart_hints':navigation_smart_hints,
+       'navigation_search_history':navigation_search_history,
+       'navigation_not_exist':navigation_not_exist}    
     
 class KoodarAndroidAssistantNavigationTests(unittest.TestCase):
     __think_time = 2
@@ -261,7 +269,7 @@ class KoodarAndroidAssistantNavigationTests(unittest.TestCase):
         desired_caps['platformVersion'] = '5.1'
         desired_caps['deviceName'] = 'Android HUD'
         #desired_caps['app'] = PATH(
-        #    'apps/Assistant_v0.4.1_production.apk'
+        #    '../../../apps/Assistant_v0.5.0_production.apk'
         #)
         desired_caps['appPackage'] = 'com.gexne.car.assistant'
         desired_caps['appActivity'] = 'systems.xos.car.android.product.companion.startup.SplashActivity'
@@ -288,7 +296,7 @@ class KoodarAndroidAssistantNavigationTests(unittest.TestCase):
                 
     #@unittest.skip("demostrating skipping")
     def test_conbination_navigation(self):
-        testMethodPrefix = "test_navigation"
+        testMethodPrefix = "navigation_"
         
         # run all atom test once
         """Return a sorted sequence of method names found within testCaseClass
@@ -308,39 +316,39 @@ class KoodarAndroidAssistantNavigationTests(unittest.TestCase):
         
     #@unittest.skip("demostrating skipping")
     def test_navigation_search_and_push_destination(self):
-        self.atomTest.test_navigation_search_and_push_destination()
+        self.atomTest.navigation_search_and_push_destination()
         
     #@unittest.skip("demostrating skipping")
     def test_navigation_add_to_favorate(self):
-        self.atomTest.test_navigation_add_to_favorate()
+        self.atomTest.navigation_add_to_favorate()
         
     #@unittest.skip("demostrating skipping")
     def test_navigation_delete_from_favorate_list(self):
-        self.atomTest.test_navigation_delete_from_favorate_list()
+        self.atomTest.navigation_delete_from_favorate_list()
         
     #@unittest.skip("demostrating skipping")    
     def test_navigation_not_exist(self):
         # search destination does not exist
         # AV-4202	Android X助手导航-在搜索框搜索目的地不存在
-        self.atomTest.test_navigation_not_exist()
+        self.atomTest.navigation_not_exist()
         
     #@unittest.skip("demostrating skipping")
     def test_navigation_smart_hints(self):    
         # smart.
         # AV-4547	Android 手机助手-导航，智能提词
-        self.atomTest.test_navigation_smart_hints()
+        self.atomTest.navigation_smart_hints()
     
     #@unittest.skip("demostrating skipping")    
     def test_navigation_search_history(self):
         # history record
         # AV-4545	Android 手机助手-导航，搜索历史
-        self.atomTest.test_navigation_search_history()
+        self.atomTest.navigation_search_history()
         
     #@unittest.skip("demostrating skipping")    
     def test_navigation_choose_destination_on_map(self):
         # select a location on the map
         # AV-4200	Android X助手导航-在地图上选择地点
-        self.atomTest.test_navigation_choose_destination_on_map()
+        self.atomTest.navigation_choose_destination_on_map()
         
 
       
