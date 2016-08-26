@@ -37,41 +37,31 @@ logging.basicConfig(level=logging.DEBUG,
                 format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
                 datefmt='%a, %d %b %Y %H:%M:%S',
                 filename='appium_python_client.log',
-                filemode='w')
-                
-                
-class KoodarAssistantIOSTests(unittest.TestCase):
-    think_time = 3
+                filemode='w')   
 
-    def setUp(self):
-        logging.info("setUp") 
-        self.testStep = CommonTestStep()
+class KoodarIOSAssistantNavigationAtomTests(unittest.TestCase):
+    def __init__(self, testStep, platformName):
+        self.testStep = testStep
+        self.platformName = platformName
         
-        desired_caps = {}
-        desired_caps['platformName'] = 'iOS'
-        desired_caps['platformVersion'] = '9.3'
-        desired_caps['deviceName'] = 'iPhone 6s Plus'
-        desired_caps['autoLaunch'] = 'false'
-        desired_caps['unicodeKeyboard'] = 'True'
-        desired_caps['resetKeyboard'] = 'True'
-        desired_caps['language'] = 'zh-Hans'
-        desired_caps['locale'] = 'zh_CN'
-        #desired_caps['udid'] = '4be7ab31bff7d81b6b8ad849ca47e42fc857c7e9'
-
-        self.testStep.init_appium(desired_caps)
-        #self.atomTest = KoodarAndroidAssistantNavigationAtomTests(self.testStep)
-        #self.atomTest.common_enter_navigation()
-
-    def tearDown(self):
-        logging.info("tearDown") 
-        # end the session
-        case_function_name = self.id().split(".")[-1]
-        self.testStep.deinit_appium(case_function_name)
+    def __common_launch_app(self):
+        if self.platformName == 'Android':
+            # launch assistant app if it installed
+            self.testStep.launch_app_if_installed('com.gexne.car.assistant', 'systems.xos.car.android.product.companion.startup.SplashActivity')
         
-    #@unittest.skip("demostrating skipping")
-    def test_login_intelligentWord(self):
-
-        try: 
+            self.testStep.wait_and_check_window_show_up('systems.xos.car.android.product.companion.startup.SplashActivity')
+    
+    def __common_login(self):
+        # wait for login window
+        if self.platformName == 'Android':
+            if self.testStep.wait_window('systems.xos.car.android.product.companion.startup.login.LoginActivity', 3):
+                # input account and password
+                self.testStep.input_textbox('com.gexne.car.assistant:id/login_phone_number', u'13824470628')
+                self.testStep.input_secure_textbox('com.gexne.car.assistant:id/login_password', u'ygvuhbijn')
+                self.testStep.tap_button('com.gexne.car.assistant:id/login_next')
+            else:
+                logging.info("*****wait for login window time out*****") 
+        elif self.platformName == 'iOS':
             self.testStep.wait_widget("//UIAButton[@name='登录']")
             # input account and password
             self.testStep.input_textbox("//UIATextField", u'13726260108')
@@ -80,13 +70,56 @@ class KoodarAssistantIOSTests(unittest.TestCase):
             #self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIASecureTextField[1]").send_keys("12345678")
             self.testStep.tap_button("//UIAButton[@name='登录']")
             #self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIAButton[1]").click()
+    
+    def common_enter_navigation(self, launch_app=True):
+        if launch_app == True:
+            self.__common_launch_app()
 
+        self.__common_login()
+
+        if self.platformName == 'Android':
+            if (self.testStep.current_window()).index("systems.xos.car"):
+                while (self.testStep.current_window() != 'systems.xos.car.android.product.companion.MainActivity'):
+                    self.testStep.driver.keyevent(4)
+                    sleep(1)
+            
+            if self.testStep.wait_window('systems.xos.car.android.product.companion.MainActivity', 3):
+                self.testStep.swipe_widget_by_direction("com.gexne.car.assistant:id/recyclerView", "up")
+                #size = self.testStep.driver.get_window_size()
+                #self.testStep.driver.swipe(size['width']/2, size['height'] - 50, size['width']/2, size['height']/2, 500)
+                # enter navigation 
+                self.testStep.tap_widget("//android.widget.TextView[@text='导航']")
+       
+            else:
+                logging.info("*****wait for main activity time out*****")
+            
+        
+            # wait for map activity
+            # gaode version is systems.xos.car.android.product.companion.navigation.MapActivity
+            # baidu version is systems.xos.car.android.product.companion.map.MainMapActivity
+            self.testStep.wait_and_check_window_show_up('systems.xos.car.android.product.companion.map.MainMapActivity')
+
+        elif self.platformName == 'iOS': 
             self.testStep.wait_widget("//UIACollectionCell[@name='导航']")
             #click into Navigation
             self.testStep.tap_widget("//UIACollectionCell[@name='导航']")
+            
+        self.testStep.tap_permision_widget("accept")
 
-            self.testStep.tap_permision_widget("accept")
-            # wait for map window
+        if self.platformName == 'Android':
+            self.testStep.wait_widget("com.gexne.car.assistant:id/compass_map_btn")
+            self.testStep.wait_widget("com.gexne.car.assistant:id/road_map_btn")
+            self.testStep.wait_widget("com.gexne.car.assistant:id/locate_map_btn")
+            self.testStep.wait_widget("com.gexne.car.assistant:id/zoom_in_map_btn")
+            self.testStep.wait_widget("com.gexne.car.assistant:id/zoom_out_map_btn")
+        elif self.platformName == 'iOS': 
+            self.testStep.wait_widget("//UIAStaticText[@label='导航']")
+        
+        
+    def navigation_search_and_push_destination(self):
+        try: 
+            # When I see the map window with searchbar '输入地址进行搜索'
+            
             # gaode version is //UIAApplication[1]/UIAWindow[1]/UIAMapView[1]
             # baidu version is //UIAApplication[1]/UIAWindow[1]
             
@@ -139,15 +172,52 @@ class KoodarAssistantIOSTests(unittest.TestCase):
             #self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIANavigationBar[1]/UIAButton[1]").click()
 
             self.testStep.tap_button("//UIAButton[@label='btn cancel']")
-            sleep(self.think_time)
+            
        
         finally:
-            print "Test finsh"
-            #self.driver.quit()
-            #if not success:
-            #raise Exception("Test failed.")
+            self = self
             
+    # atom test function list here for random combination test 
+    # make sure all all atom test tunction listed below
+    atom_test_list = {'navigation_search_and_push_destination':navigation_search_and_push_destination}#,
+#       'navigation_add_to_favorate':navigation_add_to_favorate,
+#       'navigation_delete_from_favorate_list':navigation_delete_from_favorate_list,
+#       'navigation_choose_destination_on_map':navigation_choose_destination_on_map,
+#       'navigation_smart_hints':navigation_smart_hints,
+#       'navigation_search_history':navigation_search_history,
+#       'navigation_not_exist':navigation_not_exist}  
+                     
+class KoodarIOSAssistantNavigationTests(unittest.TestCase):
+    think_time = 3
+
+    def setUp(self):
+        logging.info("setUp") 
+        self.testStep = CommonTestStep()
         
+        desired_caps = {}
+        desired_caps['platformName'] = 'iOS'
+        desired_caps['platformVersion'] = '9.3'
+        desired_caps['deviceName'] = 'iPhone 6s Plus'
+        desired_caps['autoLaunch'] = 'false'
+        desired_caps['unicodeKeyboard'] = 'True'
+        desired_caps['resetKeyboard'] = 'True'
+        desired_caps['language'] = 'zh-Hans'
+        desired_caps['locale'] = 'zh_CN'
+        #desired_caps['udid'] = '4be7ab31bff7d81b6b8ad849ca47e42fc857c7e9'
+
+        self.testStep.init_appium(desired_caps)
+        self.atomTest = KoodarIOSAssistantNavigationAtomTests(self.testStep, desired_caps['platformName'])
+        self.atomTest.common_enter_navigation()
+
+    def tearDown(self):
+        logging.info("tearDown") 
+        # end the session
+        case_function_name = self.id().split(".")[-1]
+        self.testStep.deinit_appium(case_function_name)
+        
+    #@unittest.skip("demostrating skipping")
+    def test_navigation_search_and_push_destination(self):
+        self.atomTest.navigation_search_and_push_destination()
         
     #@unittest.skip("demostrating skipping")
     def test_login_collect(self):
