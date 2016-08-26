@@ -10,6 +10,7 @@ from appium import webdriver
 from appium.webdriver.common.touch_action import TouchAction
 from appium.webdriver.common.multi_action import MultiAction
 from selenium.webdriver.support.ui import WebDriverWait  
+from selenium.common.exceptions import NoSuchElementException
 
 from PIL import Image
 
@@ -66,9 +67,16 @@ class WrongDirectionException(Exception):
     def __init__(self, value=None):
         self.value = value
 
+class UnknownChoiceException(Exception):
+    def __init__(self, value=None):
+        self,value = value
+        
 class CommonTestStep(unittest.TestCase):
     def __init__(self):
         self.step = 0
+        self.tap_duration = 200
+        self.long_tap_duration = 1000
+        self.swipe_duration = 500
     
     def __capture_element(self, what):
         begin = what.location
@@ -123,32 +131,52 @@ class CommonTestStep(unittest.TestCase):
         
     def init_appium(self, desired_caps, step_screen_shot=False):
         self.step_screen_shot = step_screen_shot
+        self.platformName = desired_caps['platformName']
         self.driver = MyWebDriver('http://localhost:4723/wd/hub', desired_caps)
-        self.touchAction = TouchAction(self.driver)
 
-        self.wait = WebDriverWait(self.driver, 10, 1)
+        try:
+            self.touchAction = TouchAction(self.driver)
+
+            self.wait = WebDriverWait(self.driver, 10, 1)
         
-        self.ime = self.driver.active_ime_engine
-        logging.debug("self.ime is %s", self.ime)
-        if self.ime == u"io.appium.android.ime/.UnicodeIME":
-            # switch to non-appium ime in order to avoid send_keys ramdom error for numbers and english charactors
-            # please be noticed that ime must be switch appium unicdoe ime for inputing Chinese charactor
-            imes = self.driver.available_ime_engines
-            for i in [1, len(imes)]:
-                if imes[i - 1] != u"io.appium.android.ime/.UnicodeIME":
-                    self.driver.activate_ime_engine(imes[i - 1])
-                    self.ime = imes[i - 1]
-                    logging.debug("self.ime is %s", self.ime)
+            if self.platformName == 'Android':    
+                self.ime = self.driver.active_ime_engine
+                logging.debug("self.ime is %s", self.ime)
+                if self.ime == u"io.appium.android.ime/.UnicodeIME":
+                    # switch to non-appium ime in order to avoid send_keys ramdom error for numbers and english charactors
+                    # please be noticed that ime must be switch appium unicdoe ime for inputing Chinese charactor
+                    imes = self.driver.available_ime_engines
+                    for i in [1, len(imes)]:
+                        if imes[i - 1] != u"io.appium.android.ime/.UnicodeIME":
+                            self.driver.activate_ime_engine(imes[i - 1])
+                            self.ime = imes[i - 1]
+                            logging.debug("self.ime is %s", self.ime)
+        except:
+            self.driver.quit()
                        
     def deinit_appium(self, screen_shot_file):
         screenshotname = "./" + screen_shot_file + ".png"
         sleep(1)
         self.driver.get_screenshot_as_file(screenshotname)
         self.driver.quit()
-        
+
+    
+    def tap_button_if_exist(self, string):
+        try:
+            button = self.driver.find_element_by_string(string)        
+            self.touchAction.press(button, self.tap_duration).release().perform()
+            logging.debug("%s button exists", string)
+        except:
+            logging.debug("%s button not exist", string)
+                
     @test_step_info
     def wait_window(self, window, timeout=10, interval=1):
-        return self.driver.wait_activity(window, timeout, interval)
+        if self.platformName == 'Android':
+            return self.driver.wait_activity(window, timeout, interval)
+        elif self.platformName == 'iOS': 
+            return self.driver.find_element_by_string(window, timeout, interval)
+        else:
+            raise UnsupportedPlatformException
 
     # function wait for act activity and check it show up or not within duration specified by parameter timeout
     # checking interval is specified by parameter interval 
@@ -180,48 +208,99 @@ class CommonTestStep(unittest.TestCase):
     @test_step_info    
     def input_textbox(self, string, text):
         textbox = self.driver.find_element_by_string(string)
-        # switch to non-appium ime in order to avoid send_keys ramdom error for numbers and english charactors
-        # please be noticed that ime must be switch appium unicdoe ime for inputing Chinese charactor
-        logging.debug("ime is %s", self.driver.active_ime_engine)
-        self.driver.activate_ime_engine(self.ime)
-        logging.debug("ime is %s", self.driver.active_ime_engine)
+    
+        if self.platformName == 'Android':
+            # switch to non-appium ime in order to avoid send_keys ramdom error for numbers and english charactors
+            # please be noticed that ime must be switch appium unicdoe ime for inputing Chinese charactor
+            logging.debug("ime is %s", self.driver.active_ime_engine)
+            self.driver.activate_ime_engine(self.ime)
+            logging.debug("ime is %s", self.driver.active_ime_engine)
 
-        self.touchAction.press(textbox).release().perform()
+        self.touchAction.press(textbox, self.tap_duration).release().perform()    
         textbox.send_keys(text)
     
     @test_step_info    
     def input_secure_textbox(self, string, text):
         textbox = self.driver.find_element_by_string(string)
+    
+        if self.platformName == 'Android':
+            # switch to non-appium ime in order to avoid send_keys ramdom error for numbers and english charactors
+            # please be noticed that ime must be switch appium unicdoe ime for inputing Chinese charactor
+            logging.debug("ime is %s", self.driver.active_ime_engine)
+            self.driver.activate_ime_engine(self.ime)
+            logging.debug("ime is %s", self.driver.active_ime_engine)
         
-        # switch to non-appium ime in order to avoid send_keys ramdom error for numbers and english charactors
-        # please be noticed that ime must be switch appium unicdoe ime for inputing Chinese charactor
-        logging.debug("ime is %s", self.driver.active_ime_engine)
-        self.driver.activate_ime_engine(self.ime)
-        logging.debug("ime is %s", self.driver.active_ime_engine)
-        
-        self.touchAction.press(textbox).release().perform() # because send_keys miss first character, so here come one blank as to avoid this problem
+        self.touchAction.press(textbox, self.tap_duration).release().perform() # because send_keys miss first character, so here come one blank as to avoid this problem
         textbox.send_keys(text)
     
     @test_step_info
-    def input_textbox_uft8(self, string, text):
+    def input_textbox_uft8(self, string, text, pinyin=None):
         textbox = self.driver.find_element_by_string(string)
-        logging.debug("ime is %s", self.driver.active_ime_engine)
-        self.driver.activate_ime_engine(u"io.appium.android.ime/.UnicodeIME")
-        logging.debug("ime is %s", self.driver.active_ime_engine)
-        textbox.send_keys(text)
-        self.driver.activate_ime_engine(self.ime)
-        logging.debug("ime is %s", self.driver.active_ime_engine)
+    
+        if self.platformName == 'Android':
+            logging.debug("ime is %s", self.driver.active_ime_engine)
+            self.driver.activate_ime_engine(u"io.appium.android.ime/.UnicodeIME")
+            logging.debug("ime is %s", self.driver.active_ime_engine)
+            
+        self.touchAction.press(textbox, self.tap_duration).release().perform()
+        
+        if self.platformName == 'iOS':
+            try:
+                self.driver.find_element_by_string("//UIAKey[@label='Pinyin-Plane']")
+            except NoSuchElementException:
+                nextKeyBoard = self.driver.find_element_by_string("//UIAButton[@label='Next keyboard']")
+                self.touchAction.press(nextKeyBoard, self.tap_duration).release().perform()
+                self.driver.find_element_by_string("//UIATableCell[@label='简体拼音, 全键盘']").click()
+            except:
+                logging.error("Unknown exception captured")
+                
+            if pinyin!=None:
+                textbox.send_keys(pinyin)
+                destination = self.driver.find_element_by_string("//UIACollectionCell[contains(@label, '"+text+"')]")
+                self.touchAction.press(destination, self.tap_duration).release().perform()
+                
+        elif self.platformName == 'Android':
+            textbox.send_keys(text)
+    
+        if self.platformName == 'Android':
+            self.driver.activate_ime_engine(self.ime)
+            logging.debug("ime is %s", self.driver.active_ime_engine)
+        
     
     @test_step_info    
     def tap_button(self, string):
         button = self.driver.find_element_by_string(string)
-        self.touchAction.press(button).release().perform()
+        self.touchAction.press(button, self.tap_duration).release().perform()
     
     @test_step_info    
     def tap_widget(self, string):
         widget = self.driver.find_element_by_string(string)
-        self.touchAction.press(widget).release().perform()
+        self.touchAction.press(widget, self.tap_duration).release().perform()
         
+    @test_step_info
+    def tap_permision_widget(self, choice="accept"):
+        if choice == "accept":
+            if self.platformName == 'Android':
+                # in order to close permision widget, here is script to ensure script can deal with MIUI and Huawei system permision widget
+                self.tap_button_if_exist("//android.widget.Button[@text='允许']")
+                self.tap_button_if_exist("com.huawei.systemmanager:id/btn_allow")
+            elif self.platformName == 'iOS':
+                self.driver.switch_to_alert().accept()
+            else:
+                raise UnsupportedPlatformException
+                
+        elif choice == "deny":
+            if self.platformName == 'Android':
+                # in order to close permision widget, here is script to ensure script can deal with MIUI and Huawei system permision widget
+                self.tap_button_if_exist("//android.widget.Button[@text='拒绝']")
+                self.tap_button_if_exist("com.huawei.systemmanager:id/btn_forbbid")
+            elif self.platformName == 'iOS':
+                self.driver.switch_to_alert().deny()
+            else:
+                raise UnsupportedPlatformException
+        else:
+            raise UnknownChoiceException 
+            
     @test_step_info
     def tap_button_sibling_widget(self, button_string, widget_string):
         widget = self.driver.find_element_by_string(widget_string)
@@ -234,14 +313,13 @@ class CommonTestStep(unittest.TestCase):
             button = widget.parent.find_element_by_xpath(button_string)
         else:
             logging.error("string is unknown")
-            raise UnknownStringException
+            raise UnknownStringException 
             
         self.assertTrue(button)
-        self.touchAction.press(button).release().perform()
+        self.touchAction.press(button, self.tap_duration).release().perform()
 
     @test_step_info
     def long_tap_widget(self, string, x=0, y=0, duration=1000):
-        self.touchAction = TouchAction(self.driver)
         widget = self.driver.find_element_by_string(string)
         size = widget.size
         if x=="middle":
@@ -254,11 +332,14 @@ class CommonTestStep(unittest.TestCase):
             size = widget.size
             x = size["width"] / 2
             y = size["height"]/ 2
-        
+
+        if duration == 1000:
+            duration = sefl.long_tap_duration
+            
         self.touchAction.long_press(widget, x, y, duration).release().perform()
         
     @test_step_info
-    def precise_tap_widget(self, string, x=0, y=0, duration=1000, allowOutOfBound=False):
+    def precise_tap_widget(self, string, x=0, y=0, duration=200, allowOutOfBound=False):
         widget = self.driver.find_element_by_string(string)
         lx = widget.location.get('x')
         ly = widget.location.get('y')
@@ -289,17 +370,11 @@ class CommonTestStep(unittest.TestCase):
         except OutOfBoundException:
             if not allowOutOfBound:
                 raise OutOfBoundException
+
+        if duration == 200:
+            duration = self.tap_duration
             
-        self.touchAction.press(widget, x+lx, y+ly).release().perform()
-    
-    @test_step_info
-    def tap_button_if_exist(self, string):
-        try:
-            button = self.driver.find_element_by_string(string)        
-            self.touchAction.press(button).release().perform()
-            logging.debug("%s button exists", string)
-        except:
-            logging.debug("%s button not exist", string)
+        self.touchAction.press(widget, x+lx, y+ly, duration).release().perform()
         
     @test_step_info
     def tap_widget_if_image_alike(self, string, ref_image_name, after_image_name=None):
@@ -309,7 +384,7 @@ class CommonTestStep(unittest.TestCase):
         added_file_name = self.__add_resolution_to_file_name(ref_image_name, elementImageSize)
         
         if self.__pil_image_similarity(added_file_name, elementImageName) == 0:
-            self.touchAction.press(star_btn).release().perform()
+            self.touchAction.press(star_btn, self.tap_duration).release().perform()
         else:
             logging.debug("image not alike")
             self.assertTrue(0)
@@ -364,13 +439,18 @@ class CommonTestStep(unittest.TestCase):
         or endx+lx>window_size['width']
         or endy+ly>window_size['height']):
             raise OutOfBoundException
-        
+
+        if duration == 500:
+            duration = self.swipe_duration
         self.driver.swipe(startx + lx, starty + ly, endx + lx, endy + ly, duration)
         
     @test_step_info        
     def swipe_widget_by_direction(self, string, direction, duration=500):
         widget = self.driver.find_element_by_string(string)
         size = widget.size
+        if duration == 500:
+            duration = self.swipe_duration
+            
         if direction == "up":
             self.driver.swipe(size['width']/2, size['height'] - 50, size['width']/2, 50, duration)
         elif direction == "down":

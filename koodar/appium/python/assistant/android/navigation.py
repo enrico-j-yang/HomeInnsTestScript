@@ -34,7 +34,7 @@ logging.basicConfig(level=logging.DEBUG,
                 filename='appium_python_client.log',
                 filemode='w')      
 
-class KoodarAundroidAssistantNavigationAtomTests(unittest.TestCase):
+class KoodarAndroidAssistantNavigationAtomTests(unittest.TestCase):
     def __init__(self, testStep):
         self.testStep = testStep
         
@@ -52,7 +52,7 @@ class KoodarAundroidAssistantNavigationAtomTests(unittest.TestCase):
             self.testStep.input_secure_textbox('com.gexne.car.assistant:id/login_password', u'ygvuhbijn')
             self.testStep.tap_button('com.gexne.car.assistant:id/login_next')
         else:
-            logging.info("*****wait for login activity time out*****") 
+            logging.info("*****wait for login window time out*****") 
     
     def common_enter_navigation(self, launch_app=True):
         if launch_app == True:
@@ -80,11 +80,7 @@ class KoodarAundroidAssistantNavigationAtomTests(unittest.TestCase):
         # gaode version is systems.xos.car.android.product.companion.navigation.MapActivity
         # baidu version is systems.xos.car.android.product.companion.map.MainMapActivity
         self.testStep.wait_and_check_window_show_up('systems.xos.car.android.product.companion.map.MainMapActivity')
-        
-        # in order to close permision widget, here is script to ensure script can deal with MIUI and Huawei system permision widget
-        self.testStep.tap_button_if_exist("//android.widget.Button[@text='允许']")
-            
-        self.testStep.tap_button_if_exist("com.huawei.systemmanager:id/btn_allow")
+        self.testStep.tap_permision_widget("accept")
         
         self.testStep.wait_widget("com.gexne.car.assistant:id/compass_map_btn")
         self.testStep.wait_widget("com.gexne.car.assistant:id/road_map_btn")
@@ -278,7 +274,7 @@ class KoodarAndroidAssistantNavigationTests(unittest.TestCase):
         desired_caps['resetKeyboard'] = 'True'
 
         self.testStep.init_appium(desired_caps)
-        self.atomTest = KoodarAundroidAssistantNavigationAtomTests(self.testStep)
+        self.atomTest = KoodarAndroidAssistantNavigationAtomTests(self.testStep)
         self.atomTest.common_enter_navigation()
 
     def tearDown(self):

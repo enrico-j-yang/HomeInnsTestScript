@@ -48,16 +48,22 @@ class MyWebDriver(webdriver.Remote):
         else:
             return "id"
             
-    def find_element_by_string(self, string):
+    # implicit wait element before find it
+    # find element by id and xpath with input string parsing
+    #
+    def find_element_by_string(self, string, timeout=10, interval=1):
         logging.debug("string is "+string)
+        wait = WebDriverWait(self, timeout, interval)
         #element = MyElement()
         #logging.debug("element is %s", element)
         if (self.check_string_type(string) == "id"):
             logging.debug("string is id")
+            #wait.until(lambda dr: dr.find_element_by_id(string).is_displayed())
             element = self.find_element_by_id(string)
         elif (self.check_string_type(string) == "xpath"):
-            element = self.find_element_by_xpath(string)
             logging.debug("string is xpath")
+            #wait.until(lambda dr: dr.find_element_by_xpath(string).is_displayed())
+            element = self.find_element_by_xpath(string)
         else:
             logging.error("string is unknown")
             raise UnknownStringException
