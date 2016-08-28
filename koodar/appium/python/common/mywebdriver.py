@@ -21,6 +21,11 @@ logging.basicConfig(level=logging.DEBUG,
                 filename='appium_python_client.log',
                 filemode='w')
 
+
+class UnknownStringException(Exception):
+    def __init__(self, value=None):
+        self.value = value
+        
 class MyWebDriver(webdriver.Remote):
     def __init__(self, command_executor='http://127.0.0.1:4444/wd/hub',
                  desired_capabilities=None, browser_profile=None, proxy=None, keep_alive=False):

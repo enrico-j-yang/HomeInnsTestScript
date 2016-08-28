@@ -62,14 +62,17 @@ class KoodarIOSAssistantNavigationAtomTests(unittest.TestCase):
             else:
                 logging.info("*****wait for login window time out*****") 
         elif self.platformName == 'iOS':
-            self.testStep.wait_widget("//UIAButton[@name='登录']")
-            # input account and password
-            self.testStep.input_textbox("//UIATextField", u'13726260108')
-            #self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIATextField[1]").send_keys("13726260108")
-            self.testStep.input_secure_textbox("//UIASecureTextField[@value='密码']", u'12345678')
-            #self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIASecureTextField[1]").send_keys("12345678")
-            self.testStep.tap_button("//UIAButton[@name='登录']")
-            #self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIAButton[1]").click()
+            try:
+                self.testStep.wait_window("//UIAButton[@name='登录']", 3)
+                # input account and password
+                self.testStep.input_textbox("//UIATextField", u'13824470628')
+                #self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIATextField[1]").send_keys("13726260108")
+                self.testStep.input_secure_textbox("//UIASecureTextField[@value='密码']", u'ygvuhbijn')
+                #self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIASecureTextField[1]").send_keys("12345678")
+                self.testStep.tap_button("//UIAButton[@name='登录']")
+                #self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIAButton[1]").click()
+            except:
+                logging.info("*****wait for login window time out*****") 
     
     def common_enter_navigation(self, launch_app=True):
         if launch_app == True:
@@ -177,15 +180,284 @@ class KoodarIOSAssistantNavigationAtomTests(unittest.TestCase):
         finally:
             self = self
             
+    def navigation_add_to_favorate(self):
+
+        try: 
+            # When I see the map window with searchbar '输入地址进行搜索'
+            
+            # gaode version is //UIAApplication[1]/UIAWindow[1]/UIAMapView[1]
+            # baidu version is //UIAApplication[1]/UIAWindow[1]
+            
+            #self.testStep.wait_window("//UIAApplication[1]/UIAWindow[1]/UIAMapView[1]")
+            self.testStep.wait_widget("//UIASearchBar[@label='输入地址进行搜索']")
+
+
+            # search destination by input name in the search text box
+            self.testStep.input_textbox_uft8("//UIAApplication[1]/UIAWindow[1]/UIASearchBar[1]/UIASearchBar[1]", u"广州", "guangzhou")
+            '''''
+            # for V0.5.0 gaode version can not locate search bar element, script below tap map widget 21 pixel below top of widget
+            # it is a hard code here due to appium limitation
+            #get the scream size
+            self.testStep.touchAction = TouchAction(self.testStep.driver)
+            aMap = self.testStep.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIAMapView[1]")
+            aMapSize = aMap.size
+            print aMapSize
+            #touch the searchBox 
+            self.testStep.touchAction.press(aMap, aMapSize['width']/2 , 21).release().perform()
+            print "y=21"
+            #self.touchAction.press(aMap, 10, aMapSize['height']/2 ).release().perform()
+            #print "x=5"
+            #self.touchAction.press(aMap, 10, 21).release().perform()
+            #print "x=5, y=21"         
+            #self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIANavigationBar[1]/UIAButton[1]").click()
+            self.testStep.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIASearchBar[1]/UIASearchBar[1]").send_keys(u"广州")
+            '''
+            
+            self.testStep.tap_widget("//UIAButton[@label='搜索']")
+            
+            #wait for the element loading
+            self.testStep.wait_widget("//UIACollectionView/UIACollectionCell/UIAStaticText[contains(@label, '广州')]")
+
+            self.testStep.tap_widget("//UIAApplication[1]/UIAWindow[1]/UIACollectionView[1]/UIACollectionCell[1]/UIAButton[1]")
+            self.testStep.driver.switch_to_alert().accept()
+            #self.testStep.tap_widget_if_image_alike("//UIAApplication[1]/UIAWindow[1]/UIACollectionView[1]/UIACollectionCell[1]/UIAButton[1]", RESOURCE_PATH+"not_fav.png", RESOURCE_PATH+"fav.png")
+            
+            #click into collect
+            self.testStep.tap_widget("//UIANavigationBar/UIAButton[@label='icn collection']")
+
+            #wait for the element loading
+            self.testStep.wait_widget("//UIATableView/UIATableCell/UIAStaticText[contains(@label, '广州')]")
+
+            self.testStep.tap_widget("//UIATableView/UIATableCell/UIAStaticText[contains(@label, '广州')]")
+            
+            # back to main window
+            #self.testStep.tap_button("//UIANavigationBar/UIAButton[@label='Back']")
+
+        finally:
+            self = self
+        
+    
+    def navigation_delete_from_favorate_list(self):
+
+        try: 
+            # When I see the map window with searchbar '输入地址进行搜索'
+            
+            # gaode version is //UIAApplication[1]/UIAWindow[1]/UIAMapView[1]
+            # baidu version is //UIAApplication[1]/UIAWindow[1]
+            
+            #self.testStep.wait_window("//UIAApplication[1]/UIAWindow[1]/UIAMapView[1]")
+            self.testStep.wait_widget("//UIASearchBar[@label='输入地址进行搜索']")
+            
+            #click into collect
+            self.testStep.tap_widget("//UIANavigationBar/UIAButton[@label='icn collection']")
+
+            #wait for the element loading
+            self.testStep.wait_widget("//UIATableView/UIATableCell/UIAStaticText[contains(@label, '广州')]")
+            #delete item from favorate list
+            #self.testStep.swipe_widget_by_direction("//UIATableView/UIATableCell[contains(@name, '广州')]", "left")
+            self.testStep.flick_widget_by_direction("//UIATableView/UIATableCell[contains(@name, '广州')]", "left")
+            
+            sleep(10)
+            #back to navigation window
+            self.testStep.tap_button("//UIANavigationBar/UIAButton[@name='Back']")
+
+
+            # search destination by input name in the search text box
+            self.testStep.input_textbox_uft8("//UIAApplication[1]/UIAWindow[1]/UIASearchBar[1]/UIASearchBar[1]", u"广州", "guangzhou")
+            '''''
+            # for V0.5.0 gaode version can not locate search bar element, script below tap map widget 21 pixel below top of widget
+            # it is a hard code here due to appium limitation
+            #get the scream size
+            self.testStep.touchAction = TouchAction(self.testStep.driver)
+            aMap = self.testStep.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIAMapView[1]")
+            aMapSize = aMap.size
+            print aMapSize
+            #touch the searchBox 
+            self.testStep.touchAction.press(aMap, aMapSize['width']/2 , 21).release().perform()
+            print "y=21"
+            #self.touchAction.press(aMap, 10, aMapSize['height']/2 ).release().perform()
+            #print "x=5"
+            #self.touchAction.press(aMap, 10, 21).release().perform()
+            #print "x=5, y=21"         
+            #self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIANavigationBar[1]/UIAButton[1]").click()
+            self.testStep.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIASearchBar[1]/UIASearchBar[1]").send_keys(u"广州")
+            '''
+            
+            self.testStep.tap_widget("//UIAButton[@label='搜索']")
+            
+            #wait for the element loading
+            self.testStep.wait_widget("//UIACollectionView/UIACollectionCell/UIAStaticText[contains(@label, '广州')]")
+
+            #self.testStep.tap_widget_if_image_alike("//UIAApplication[1]/UIAWindow[1]/UIACollectionView[1]/UIACollectionCell[1]/UIAButton[1]", RESOURCE_PATH+"fav.png")
+            
+
+            
+            # back to main window
+            #self.testStep.tap_button("//UIANavigationBar/UIAButton[@label='Back']")
+
+        finally:
+            self = self
+        
+    
+    def navigation_choose_destination_on_map(self):
+        try: 
+            # When I see the map window with searchbar '输入地址进行搜索'
+            
+            # gaode version is //UIAApplication[1]/UIAWindow[1]/UIAMapView[1]
+            # baidu version is //UIAApplication[1]/UIAWindow[1]
+            
+            #self.testStep.wait_window("//UIAApplication[1]/UIAWindow[1]/UIAMapView[1]")
+            self.testStep.wait_widget("//UIASearchBar[@label='输入地址进行搜索']")
+
+            # select a location on the map
+            self.testStep.long_tap_widget("//UIAApplication[1]/UIAWindow[1]")
+
+            #push into koodar
+            self.testStep.tap_widget("//UIAButton[@label='推送到 Koodar']")
+            self.testStep.driver.switch_to_alert().accept()
+
+            
+            #check the way
+            self.testStep.tap_widget("//UIAButton[@label='查看路线']")
+        
+            self.testStep.wait_widget("//UIAStaticText[@label='需要']")
+            self.testStep.wait_widget("//UIAStaticText[@label='一共']")
+        
+            self.testStep.tap_widget("//UIAButton[@label='btn send']")
+            self.testStep.driver.switch_to_alert().accept()
+
+            #back
+            #self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIAButton[1]").click()
+            #self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIANavigationBar[1]/UIAButton[1]").click()
+
+            self.testStep.tap_button("//UIAButton[@label='btn cancel']")
+            
+
+        finally:
+            self = self
+ 
+    def navigation_search_history(self):
+        try: 
+            # When I see the map window with searchbar '输入地址进行搜索'
+            
+            # gaode version is //UIAApplication[1]/UIAWindow[1]/UIAMapView[1]
+            # baidu version is //UIAApplication[1]/UIAWindow[1]
+            
+            #self.testStep.wait_window("//UIAApplication[1]/UIAWindow[1]/UIAMapView[1]")
+            self.testStep.wait_widget("//UIASearchBar[@label='输入地址进行搜索']")
+
+            # search destination by input name in the search text box
+            self.testStep.input_textbox_uft8("//UIAApplication[1]/UIAWindow[1]/UIASearchBar[1]/UIASearchBar[1]", u"广州", "guangzhou")
+            '''''
+            # for V0.5.0 gaode version can not locate search bar element, script below tap map widget 21 pixel below top of widget
+            # it is a hard code here due to appium limitation
+            #get the scream size
+            self.testStep.touchAction = TouchAction(self.testStep.driver)
+            aMap = self.testStep.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIAMapView[1]")
+            aMapSize = aMap.size
+            print aMapSize
+            #touch the searchBox 
+            self.testStep.touchAction.press(aMap, aMapSize['width']/2 , 21).release().perform()
+            print "y=21"
+            #self.touchAction.press(aMap, 10, aMapSize['height']/2 ).release().perform()
+            #print "x=5"
+            #self.touchAction.press(aMap, 10, 21).release().perform()
+            #print "x=5, y=21"         
+            #self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIANavigationBar[1]/UIAButton[1]").click()
+            self.testStep.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIASearchBar[1]/UIASearchBar[1]").send_keys(u"广州")
+            '''
+        
+            self.testStep.tap_widget("//UIAButton[@label='搜索']")
+        
+            #wait for the element loading
+            self.testStep.wait_widget("//UIACollectionView/UIACollectionCell/UIAStaticText[contains(@label, '广州')]")
+
+            self.testStep.tap_button("//UIANavigationBar/UIAButton[@label='Back']")
+
+            self.common_enter_navigation(False) # enter navigation window without reset app
+        
+            self.testStep.tap_widget("//UIASearchBar[@label='输入地址进行搜索']")
+            
+            self.testStep.precise_tap_widget("//UIAApplication[1]/UIAWindow[1]", "middle", 90)
+        
+            #wait for the element loading
+            self.testStep.wait_widget("//UIACollectionView/UIACollectionCell/UIAStaticText[contains(@label, '广州')]")
+    
+            #push into koodar
+            self.testStep.tap_widget("//UIAButton[@label='推送到 Koodar']")
+            self.testStep.driver.switch_to_alert().accept()
+            
+        finally:
+            self = self
+        
+        
+    def navigation_not_exist(self):
+        try: 
+            # When I see the map window with searchbar '输入地址进行搜索'
+            
+            # gaode version is //UIAApplication[1]/UIAWindow[1]/UIAMapView[1]
+            # baidu version is //UIAApplication[1]/UIAWindow[1]
+            
+            #self.testStep.wait_window("//UIAApplication[1]/UIAWindow[1]/UIAMapView[1]")
+            self.testStep.wait_widget("//UIASearchBar[@label='输入地址进行搜索']")
+
+            # search destination by input name in the search text box
+            self.testStep.input_textbox_uft8("//UIAApplication[1]/UIAWindow[1]/UIASearchBar[1]/UIASearchBar[1]", u"请问", "qingwen")
+            '''''
+            # for V0.5.0 gaode version can not locate search bar element, script below tap map widget 21 pixel below top of widget
+            # it is a hard code here due to appium limitation
+            #get the scream size
+            self.testStep.touchAction = TouchAction(self.testStep.driver)
+            aMap = self.testStep.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIAMapView[1]")
+            aMapSize = aMap.size
+            print aMapSize
+            #touch the searchBox 
+            self.testStep.touchAction.press(aMap, aMapSize['width']/2 , 21).release().perform()
+            print "y=21"
+            #self.touchAction.press(aMap, 10, aMapSize['height']/2 ).release().perform()
+            #print "x=5"
+            #self.touchAction.press(aMap, 10, 21).release().perform()
+            #print "x=5, y=21"         
+            #self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIANavigationBar[1]/UIAButton[1]").click()
+            self.testStep.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIASearchBar[1]/UIASearchBar[1]").send_keys(u"广州")
+            '''
+
+            self.testStep.wait_widget("//UIAAlert/UIAScrollView/UIAStaticText[@name='抱歉，没有找到结果']")
+            self.testStep.driver.switch_to_alert().accept()
+            self.testStep.tap_button("//UIANavigationBar/UIAButton[@label='Back']")
+            
+        finally:
+            self = self    
+        
+        
+    '''''
+    # WebDriverException: Message: Unknown command, all the mobile commands except scroll have been removed.
+    def navigation_pinch(self):
+        try:
+            # When I see the map window with searchbar '输入地址进行搜索'
+            
+            # gaode version is //UIAApplication[1]/UIAWindow[1]/UIAMapView[1]
+            # baidu version is //UIAApplication[1]/UIAWindow[1]
+            
+            #self.testStep.wait_window("//UIAApplication[1]/UIAWindow[1]/UIAMapView[1]")
+            self.testStep.wait_widget("//UIASearchBar[@label='输入地址进行搜索']")
+
+            #enlarge the map(wrong)
+            self.testStep.pinch_widget("//UIAApplication[1]/UIAWindow[1]", 200, 50)
+            
+        finally:
+            self = self
+    '''            
     # atom test function list here for random combination test 
     # make sure all all atom test tunction listed below
-    atom_test_list = {'navigation_search_and_push_destination':navigation_search_and_push_destination}#,
-#       'navigation_add_to_favorate':navigation_add_to_favorate,
-#       'navigation_delete_from_favorate_list':navigation_delete_from_favorate_list,
-#       'navigation_choose_destination_on_map':navigation_choose_destination_on_map,
+    atom_test_list = {'navigation_search_and_push_destination':navigation_search_and_push_destination,
+        'navigation_add_to_favorate':navigation_add_to_favorate,
+        'navigation_delete_from_favorate_list':navigation_delete_from_favorate_list,
+        'navigation_choose_destination_on_map':navigation_choose_destination_on_map,
 #       'navigation_smart_hints':navigation_smart_hints,
-#       'navigation_search_history':navigation_search_history,
-#       'navigation_not_exist':navigation_not_exist}  
+        'navigation_search_history':navigation_search_history,
+#        'navigation_pinch':navigation_pinch,
+        'navigation_not_exist':navigation_not_exist}  
                      
 class KoodarIOSAssistantNavigationTests(unittest.TestCase):
     think_time = 3
@@ -201,11 +473,12 @@ class KoodarIOSAssistantNavigationTests(unittest.TestCase):
         desired_caps['autoLaunch'] = 'false'
         desired_caps['unicodeKeyboard'] = 'True'
         desired_caps['resetKeyboard'] = 'True'
-        desired_caps['language'] = 'zh-Hans'
-        desired_caps['locale'] = 'zh_CN'
-        #desired_caps['udid'] = '4be7ab31bff7d81b6b8ad849ca47e42fc857c7e9'
+        #desired_caps['bundleId'] = 'com.gexne.car.assistant.ih'
+        desired_caps['language'] = 'zh-Hans' # for iphone simulator, input method should be force decided
+        desired_caps['locale'] = 'zh_CN' # for iphone simulator, locale should be force decided
+        #desired_caps['udid'] = '9c3bfe9438fcb01fde3cff021b8cfdff0cf2bc09' # for real ios devices
 
-        self.testStep.init_appium(desired_caps)
+        self.testStep.init_appium(desired_caps, True)
         self.atomTest = KoodarIOSAssistantNavigationAtomTests(self.testStep, desired_caps['platformName'])
         self.atomTest.common_enter_navigation()
 
@@ -214,191 +487,67 @@ class KoodarIOSAssistantNavigationTests(unittest.TestCase):
         # end the session
         case_function_name = self.id().split(".")[-1]
         self.testStep.deinit_appium(case_function_name)
+    
+    #@unittest.skip("demostrating skipping")
+    def test_conbination_navigation(self):
+        testMethodPrefix = "navigation_"
         
+        # run all atom test once
+        """Return a sorted sequence of method names found within testCaseClass
+        """
+        def isTestMethod(attrname, testCaseClass=self.atomTest,
+                         prefix=testMethodPrefix):
+            return attrname.startswith(prefix) and \
+                hasattr(getattr(self.atomTest, attrname), '__call__')
+        testFnNames = filter(isTestMethod, dir(self.atomTest))
+        logging.debug(testFnNames)
+        for i in testFnNames:
+            try:
+                self.atomTest.atom_test_list[i](self.atomTest)
+            except KeyError:
+                raise ValueError("invalid input")
+                
     #@unittest.skip("demostrating skipping")
     def test_navigation_search_and_push_destination(self):
         self.atomTest.navigation_search_and_push_destination()
         
     #@unittest.skip("demostrating skipping")
-    def test_login_collect(self):
+    def test_navigation_add_to_favorate(self):
+        self.atomTest.navigation_add_to_favorate()
         
-        wd = self.driver
-        wait = WebDriverWait(wd, 10)
-
-        try: 
-            # input account and password
-            self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIATextField[1]").send_keys("13726260108")
-            self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIASecureTextField[1]").send_keys("12345678")
-            self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIAButton[1]").click()
-            sleep(self.think_time)
-
-            #wait for the element loading
-            currently_waiting_for = wait.until(EC.element_to_be_clickable((By.XPATH,'//UIAApplication[1]/UIAWindow[1]/UIACollectionView[1]/UIACollectionCell[1]')))
-            #click into Navigation
-            self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIACollectionView[1]/UIACollectionCell[1]").click()
-            sleep(self.think_time)
-            self.driver.switch_to_alert().accept()
-            sleep(self.think_time)
-
-            #click into collect
-            favorite_list = self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIANavigationBar[1]/UIAButton[3]")
-            self.assertTrue(favorite_list)
-            self.touchAction.press(favorite_list).release().perform()
-            sleep(self.think_time)
-
-            #wait for the element loading
-            currently_waiting_for = wait.until(EC.element_to_be_clickable((By.XPATH,'//UIAApplication[1]/UIAWindow[1]/UIATableView[1]/UIATableCell[2]')))
-            #click into the first option
-            self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIATableView[1]/UIATableCell[2]").click()
-
-            #push into koodar
-            currently_waiting_for = wait.until(EC.element_to_be_clickable((By.XPATH,'//UIAApplication[1]/UIAWindow[1]/UIACollectionView[1]/UIACollectionCell[1]/UIAButton[2]')))
-            self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIACollectionView[1]/UIACollectionCell[1]/UIAButton[2]").click()
-            self.driver.switch_to_alert().accept()
-
-            #view route
-            currently_waiting_for = wait.until(EC.element_to_be_clickable((By.XPATH,'//UIAApplication[1]/UIAWindow[1]/UIACollectionView[1]/UIACollectionCell[1]/UIAButton[3]')))
-            self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIACollectionView[1]/UIACollectionCell[1]/UIAButton[3]").click()
-            sleep(self.think_time)
-            #currently_waiting_for = wait.until(EC.element_to_be_clickable((By.XPATH,'//UIAApplication[1]/UIAWindow[1]/UIAButton[2]')))
-            #self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIAButton[2]").click()
-            #self.driver.switch_to_alert().accept()
-            #sleep(self.think_time)
-
-        finally:
-            print "Test finsh"
-
-
     #@unittest.skip("demostrating skipping")
-    def test_login_longPress(self):
-        wd = self.driver
-        wait = WebDriverWait(wd, 10)
+    def test_navigation_delete_from_favorate_list(self):
+        self.atomTest.navigation_delete_from_favorate_list()
 
-        try: 
-            # input account and password
-            self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIATextField[1]").send_keys("13726260108")
-            self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIASecureTextField[1]").send_keys("12345678")
-            self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIAButton[1]").click()
-            sleep(self.think_time)
+        
+    #@unittest.skip("demostrating skipping")    
+    def test_navigation_choose_destination_on_map(self):
+        # select a location on the map
+        # AV-4200	Android X助手导航-在地图上选择地点
+        self.atomTest.navigation_choose_destination_on_map()
 
-            #wait for the element loading
-            currently_waiting_for = wait.until(EC.element_to_be_clickable((By.XPATH,'//UIAApplication[1]/UIAWindow[1]/UIACollectionView[1]/UIACollectionCell[1]')))
-            #click into Navigation
-            self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIACollectionView[1]/UIACollectionCell[1]").click()
-            sleep(self.think_time)
-            self.driver.switch_to_alert().accept()
-            sleep(self.think_time)
+    #@unittest.skip("demostrating skipping")    
+    def test_navigation_not_exist(self):
+        # search destination does not exist
+        # AV-4202	Android X助手导航-在搜索框搜索目的地不存在
+        self.atomTest.navigation_not_exist()
+        
+    #@unittest.skip("demostrating skipping")    
+    def test_navigation_search_history(self):
+        # history record
+        # AV-4545	Android 手机助手-导航，搜索历史
+        self.atomTest.navigation_search_history()
+        
+    '''''
+    # WebDriverException: Message: Unknown command, all the mobile commands except scroll have been removed.
+        
+    #@unittest.skip("demostrating skipping")    
+    def test_navigation_pinch(self):
+        # history record
+        # AV-4545	Android 手机助手-导航，搜索历史
+        self.atomTest.navigation_pinch()
 
-            # select a location on the map
-            self.touchAction = TouchAction(self.driver)
-            aMap = self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIAMapView[1]")
-            aMapSize = aMap.size
-            print aMapSize
-
-            #self.assertTrue(map)
-            self.touchAction.press(aMap, aMapSize['width']/2 , 66).wait(10000).release().perform()
-
-            #push into koodar
-            currently_waiting_for = wait.until(EC.element_to_be_clickable((By.XPATH,'//UIAApplication[1]/UIAWindow[1]/UIACollectionView[1]/UIACollectionCell[1]/UIAButton[2]')))
-            self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIACollectionView[1]/UIACollectionCell[1]/UIAButton[2]").click()
-            self.driver.switch_to_alert().accept()
-
-            # view route
-            currently_waiting_for = wait.until(EC.element_to_be_clickable((By.XPATH,'//UIAApplication[1]/UIAWindow[1]/UIACollectionView[1]/UIACollectionCell[1]/UIAButton[3]')))
-            get_route_layout = self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIACollectionView[1]/UIACollectionCell[1]/UIAButton[3]")
-            self.touchAction.press(get_route_layout).release().perform()
-            sleep(self.think_time)
-            #currently_waiting_for = wait.until(EC.element_to_be_clickable((By.XPATH,'//UIAApplication[1]/UIAWindow[1]/UIAButton[2]')))
-            #self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIAButton[2]").click()
-            #self.driver.switch_to_alert().accept()
-            #sleep(self.think_time)
-
-        finally:
-            print "Test finsh"
-
-
-
-    #@unittest.skip("demostrating skipping")
-    def test_login_enlarge(self):
-        wd = self.driver
-        wait = WebDriverWait(wd, 10)
-
-        try: 
-            # input account and password
-            self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIATextField[1]").send_keys("13726260108")
-            self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIASecureTextField[1]").send_keys("12345678")
-            self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIAButton[1]").click()
-            sleep(self.think_time)
-
-            #wait for the element loading
-            currently_waiting_for = wait.until(EC.element_to_be_clickable((By.XPATH,'//UIAApplication[1]/UIAWindow[1]/UIACollectionView[1]/UIACollectionCell[1]')))
-            #click into Navigation
-            self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIACollectionView[1]/UIACollectionCell[1]").click()
-            sleep(self.think_time)
-            self.driver.switch_to_alert().accept()
-            sleep(self.think_time)
-
-            #enlarge the map(wrong)
-            pinch(self, self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIAMapView[1]"), percent=200, steps=50)
-
-        finally:
-            print "Test finsh"
-
-
-
-    #@unittest.skip("demostrating skipping")
-    def test_login_history(self):
-        wd = self.driver
-        wait = WebDriverWait(wd, 10)
-
-        try: 
-            # input account and password
-            self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIATextField[1]").send_keys("13726260108")
-            self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIASecureTextField[1]").send_keys("12345678")
-            self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIAButton[1]").click()
-            sleep(self.think_time)
-
-            #wait for the element loading
-            currently_waiting_for = wait.until(EC.element_to_be_clickable((By.XPATH,'//UIAApplication[1]/UIAWindow[1]/UIACollectionView[1]/UIACollectionCell[1]')))
-            #click into Navigation
-            self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIACollectionView[1]/UIACollectionCell[1]").click()
-            sleep(self.think_time)
-            self.driver.switch_to_alert().accept()
-            sleep(self.think_time)
-
-            #get the scream size
-            self.touchAction = TouchAction(self.driver)
-            aMap = self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIAMapView[1]")
-            aMapSize = aMap.size
-            print aMapSize
-
-            #touch the searchBox 
-            self.touchAction.press(aMap, aMapSize['width']/2 , 21).release().perform()
-            print "y=21"
-            #self.touchAction.press(aMap, 10, aMapSize['height']/2 ).release().perform()
-            #print "x=5"
-            #self.touchAction.press(aMap, 10, 21).release().perform()
-            #print "x=5, y=21"         
-            #self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIANavigationBar[1]/UIAButton[1]").click()
-            self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIASearchBar[1]/UIASearchBar[1]").send_keys(u"广州")
-
-
-            #wait for the element loading
-            currently_waiting_for = wait.until(EC.element_to_be_clickable((By.XPATH,'//UIAApplication[1]/UIAWindow[1]/UIATableView[1]/UIATableCell[1]/UIAStaticText[1]')))
-            #click into the first option
-            self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIATableView[1]/UIATableCell[1]/UIAStaticText[1]").click()
-            #back
-            self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIANavigationBar[1]/UIAButton[1]").click()
-
-            #wait for the element loading
-            currently_waiting_for = wait.until(EC.element_to_be_clickable((By.XPATH,'//UIAApplication[1]/UIAWindow[1]/UIACollectionView[1]/UIACollectionCell[1]')))
-            #click into Navigation
-            self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIACollectionView[1]/UIACollectionCell[1]").click()
-            self.touchAction.press(aMap, aMapSize['width']/2 , 21).release().perform()
-            sleep(self.think_time)
-
-        finally:
-            print "Test finsh"         
+    '''
 
 
 

@@ -250,7 +250,7 @@ class CommonTestStep(unittest.TestCase):
             except NoSuchElementException:
                 nextKeyBoard = self.driver.find_element_by_string("//UIAButton[@label='Next keyboard']")
                 self.touchAction.press(nextKeyBoard, self.tap_duration).release().perform()
-                self.driver.find_element_by_string("//UIATableCell[@label='简体拼音, 全键盘']").click()
+                self.driver.find_element_by_string("//UIATableCell[contains(@label, '简体拼音')]").click()
             except:
                 logging.error("Unknown exception captured")
                 
@@ -285,7 +285,10 @@ class CommonTestStep(unittest.TestCase):
                 self.tap_button_if_exist("//android.widget.Button[@text='允许']")
                 self.tap_button_if_exist("com.huawei.systemmanager:id/btn_allow")
             elif self.platformName == 'iOS':
-                self.driver.switch_to_alert().accept()
+                try:
+                    self.driver.switch_to_alert().accept()
+                except:
+                    logging.info("no alert exist")
             else:
                 raise UnsupportedPlatformException
                 
@@ -334,7 +337,7 @@ class CommonTestStep(unittest.TestCase):
             y = size["height"]/ 2
 
         if duration == 1000:
-            duration = sefl.long_tap_duration
+            duration = self.long_tap_duration
             
         self.touchAction.long_press(widget, x, y, duration).release().perform()
         
@@ -374,7 +377,7 @@ class CommonTestStep(unittest.TestCase):
         if duration == 200:
             duration = self.tap_duration
             
-        self.touchAction.press(widget, x+lx, y+ly, duration).release().perform()
+        self.touchAction.press(widget, x+lx, y+ly).wait(duration).release().perform()
         
     @test_step_info
     def tap_widget_if_image_alike(self, string, ref_image_name, after_image_name=None):
@@ -411,11 +414,8 @@ class CommonTestStep(unittest.TestCase):
     @test_step_info
     def swipe_widget(self, string, startx=0, starty=0, endx=0, endy=0, duration=500):
         widget = self.driver.find_element_by_string(string)
-        lx = widget.location.get('x')
-        ly = widget.location.get('y')
-        logging.debug("location x:%s location y:%s", lx, ly)
         size = widget.size
-        logging.debug("size %s %s", size["width"], size["height"])
+        logging.debug("size %d %d", size["width"], size["height"])
         if startx=="middle":
             startx = size["width"] / 2
         
@@ -427,9 +427,13 @@ class CommonTestStep(unittest.TestCase):
         
         if endy=="middle":
             endy = size["height"]/ 2
-        
+        logging.debug("startx:%d starty:%d endx:%d endy:%d", startx, starty, endx, endy)
+
+        lx = widget.location.get('x')
+        ly = widget.location.get('y')
+        logging.debug("location x:%d location y:%d", ly, ly)
         window_size = self.driver.get_window_size()
-        logging.debug("window size %s %s", window_size["width"], window_size["height"])
+        logging.debug("window size %d %d", window_size["width"], window_size["height"])
         if (startx>size['width'] or startx<0
         or starty>size['height'] or starty<0
         or endx>size['width'] or endx<0
@@ -447,18 +451,65 @@ class CommonTestStep(unittest.TestCase):
     @test_step_info        
     def swipe_widget_by_direction(self, string, direction, duration=500):
         widget = self.driver.find_element_by_string(string)
-        size = widget.size
+        
+        size = widget.size    
+        logging.debug("size %s %s", size["width"], size["height"])
+        lx = widget.location.get('x')
+        ly = widget.location.get('y')
+        logging.debug("location x:%s location y:%s", lx, ly)
+        window_size = self.driver.get_window_size()
+        logging.debug("window size %s %s", window_size["width"], window_size["height"])
+
+        if (size['width']/2+lx>window_size['width'] 
+        or size['height']/2+ly>window_size['height']):
+            raise OutOfBoundException
+
         if duration == 500:
             duration = self.swipe_duration
-            
+                
         if direction == "up":
-            self.driver.swipe(size['width']/2, size['height'] - 50, size['width']/2, 50, duration)
+            self.driver.swipe(size['width']/2+lx, size['height']-1+ly, size['width']/2+lx, 1+ly,                duration)
         elif direction == "down":
-            self.driver.swipe(size['width']/2, 50, size['width']/2, size['height'] - 50, duration)
+            self.driver.swipe(size['width']/2+lx, 1+ly,                size['width']/2+lx, size['height']-1+ly, duration)
         elif direction == "left":
-            self.driver.swipe(size['width'] - 50, size['height']/2, 50, size['height']/2, duration)
+            self.driver.swipe(size['width']-1+lx, size['height']/2+ly, 1+lx,               size['height']/2+ly, duration)
         elif direction == "right":
-            self.driver.swipe(50, size['height']/2, size['width'] - 50, size['height']/2, duration)
+            self.driver.swipe(1+lx,               size['height']/2+ly, size['width']-1+lx, size['height']/2+ly, duration)
         else:
             raise WrongDirectionException
-            
+        
+    @test_step_info        
+    def flick_widget_by_direction(self, string, direction, duration=500):
+        widget = self.driver.find_element_by_string(string)
+
+        size = widget.size    
+        logging.debug("size %s %s", size["width"], size["height"])
+        lx = widget.location.get('x')
+        ly = widget.location.get('y')
+        logging.debug("location x:%s location y:%s", lx, ly)
+        window_size = self.driver.get_window_size()
+        logging.debug("window size %s %s", window_size["width"], window_size["height"])
+
+        if (size['width']/2+lx>window_size['width'] 
+        or size['height']/2+ly>window_size['height']):
+            raise OutOfBoundException
+
+        if duration == 500:
+            duration = self.swipe_duration
+        
+        if direction == "up":
+            self.driver.flick(size['width']/2+lx, size['height']-1+ly, size['width']/2+lx, 1+ly)
+        elif direction == "down":
+            self.driver.flick(size['width']/2+lx, 1+ly,                size['width']/2+lx, size['height']-1+ly)
+        elif direction == "left":
+            self.driver.flick(size['width']-1+lx, size['height']/2+ly, 1+lx,               size['height']/2+ly)
+        elif direction == "right":
+            self.driver.flick(1+lx,               size['height']/2+ly, size['width']-1+lx, size['height']/2+ly)
+        else:
+            raise WrongDirectionException
+    
+    @test_step_info
+    def pinch_widget(self, string, percentage=200, steps=50):
+        widget = self.driver.find_element_by_string(string)
+        
+        self.driver.pinch(widget, percentage, steps)

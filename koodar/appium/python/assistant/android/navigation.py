@@ -144,7 +144,25 @@ class KoodarAndroidAssistantNavigationAtomTests(unittest.TestCase):
         self.testStep.tap_button("com.gexne.car.assistant:id/search_btn")
         self.testStep.wait_widget("//android.widget.TextView[contains(@text, '广州')]")
         self.testStep.check_widget_if_image_alike("//android.widget.LinearLayout[1]/android.widget.FrameLayout[1]/android.widget.LinearLayout[1]/android.widget.FrameLayout[1]/android.widget.LinearLayout[1]/android.widget.RelativeLayout[1]/android.support.v7.widget.RecyclerView[1]/android.widget.LinearLayout[2]/android.widget.RelativeLayout[1]/android.widget.ImageButton[1]", RESOURCE_PATH+"fav.png")
-    
+
+    def navigation_choose_destination_on_map(self):
+        
+        try:
+            self.testStep.long_tap_widget("com.gexne.car.assistant:id/parent_view")
+        except:
+            self.testStep.long_tap_widget("//android.widget.LinearLayout[1]/android.widget.FrameLayout[1]/android.widget.LinearLayout[1]/android.widget.FrameLayout[1]/android.widget.LinearLayout[1]")
+             
+
+        self.testStep.wait_widget("//android.widget.TextView[contains(@text, '推送到')]")
+        
+        self.testStep.tap_widget("com.gexne.car.assistant:id/get_route_layout")
+        
+        self.testStep.wait_widget("//android.widget.TextView[@text='耗时']")
+        self.testStep.wait_widget("//android.widget.TextView[@text='距离']")
+        
+        self.testStep.tap_widget("com.gexne.car.assistant:id/push_destination")
+        self.testStep.tap_button("com.gexne.car.assistant:id/back_btn")
+        
     def navigation_not_exist(self):
         # wait for map activity
         # gaode version is systems.xos.car.android.product.companion.navigation.MapActivity
@@ -215,25 +233,6 @@ class KoodarAndroidAssistantNavigationAtomTests(unittest.TestCase):
         sleep(self.__think_time)
         self.testStep.tap_widget("com.gexne.car.assistant:id/push_layout")
         self.testStep.tap_button("com.gexne.car.assistant:id/star_btn")
-    
-
-    def navigation_choose_destination_on_map(self):
-        
-        try:
-            self.testStep.long_tap_widget("com.gexne.car.assistant:id/parent_view")
-        except:
-            self.testStep.long_tap_widget("//android.widget.LinearLayout[1]/android.widget.FrameLayout[1]/android.widget.LinearLayout[1]/android.widget.FrameLayout[1]/android.widget.LinearLayout[1]")
-             
-
-        self.testStep.wait_widget("//android.widget.TextView[contains(@text, '推送到')]")
-        
-        self.testStep.tap_widget("com.gexne.car.assistant:id/get_route_layout")
-        
-        self.testStep.wait_widget("//android.widget.TextView[@text='耗时']")
-        self.testStep.wait_widget("//android.widget.TextView[@text='距离']")
-        
-        self.testStep.tap_widget("com.gexne.car.assistant:id/push_destination")
-        self.testStep.tap_button("com.gexne.car.assistant:id/back_btn")
            
     # atom test function list here for random combination test 
     # make sure all all atom test tunction listed below
@@ -323,6 +322,12 @@ class KoodarAndroidAssistantNavigationTests(unittest.TestCase):
         self.atomTest.navigation_delete_from_favorate_list()
         
     #@unittest.skip("demostrating skipping")    
+    def test_navigation_choose_destination_on_map(self):
+        # select a location on the map
+        # AV-4200	Android X助手导航-在地图上选择地点
+        self.atomTest.navigation_choose_destination_on_map()
+        
+    #@unittest.skip("demostrating skipping")    
     def test_navigation_not_exist(self):
         # search destination does not exist
         # AV-4202	Android X助手导航-在搜索框搜索目的地不存在
@@ -339,12 +344,6 @@ class KoodarAndroidAssistantNavigationTests(unittest.TestCase):
         # history record
         # AV-4545	Android 手机助手-导航，搜索历史
         self.atomTest.navigation_search_history()
-        
-    #@unittest.skip("demostrating skipping")    
-    def test_navigation_choose_destination_on_map(self):
-        # select a location on the map
-        # AV-4200	Android X助手导航-在地图上选择地点
-        self.atomTest.navigation_choose_destination_on_map()
         
 
       
