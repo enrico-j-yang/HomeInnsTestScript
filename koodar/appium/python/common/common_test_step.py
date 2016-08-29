@@ -45,11 +45,11 @@ def test_step_info(func):
         logging.info("test step %d %s", objPtr.step, func.__name__)
         result=func(*args, **kw)
 
-        if  objPtr.step_screen_shot == True:
+        if  objPtr.case_function_name != None:
             # take screen shot after every step function
             # it will slow down the test and use much more storage space
-            case_function_name = func.__name__
-            screenshotname = "./step " + str(objPtr.step) + " "+ case_function_name + ".png"
+            step_function_name = func.__name__
+            screenshotname = objPtr.case_function_name + "/step " + str(objPtr.step) + " "+ step_function_name + ".png"
             objPtr.driver.get_screenshot_as_file(screenshotname)
                 
         return result
@@ -129,8 +129,11 @@ class CommonTestStep(unittest.TestCase):
          
         return added_file_name    
         
-    def init_appium(self, desired_caps, step_screen_shot=False):
-        self.step_screen_shot = step_screen_shot
+    def init_appium(self, desired_caps, case_function_name=None):
+        if case_function_name != None:
+            self.case_function_name = case_function_name
+            os.popen("mkdir "+self.case_function_name)
+            
         self.platformName = desired_caps['platformName']
         self.driver = MyWebDriver('http://localhost:4723/wd/hub', desired_caps)
 
@@ -173,21 +176,30 @@ class CommonTestStep(unittest.TestCase):
     def wait_window(self, window, timeout=10, interval=1):
         if self.platformName == 'Android':
             return self.driver.wait_activity(window, timeout, interval)
-        elif self.platformName == 'iOS': 
-            return self.driver.find_element_by_string(window, timeout, interval)
+        elif self.platformName == 'iOS':
+            wait = WebDriverWait(self, timeout, interval)
+            wait.until(lambda dr: dr.driver.find_element_by_string(window).is_displayed())
+            return self.driver.find_element_by_string(window)
         else:
             raise UnsupportedPlatformException
 
     # function wait for act activity and check it show up or not within duration specified by parameter timeout
     # checking interval is specified by parameter interval 
     @test_step_info
-    def wait_and_check_window_show_up(self, activity, timeout=10, interval=1):
-        if self.driver.wait_activity(activity, timeout, interval):
-           logging.debug("*****"+activity+" OK*****") 
-        else:
-           logging.error("*****wait for "+activity+" time out*****") 
+    def wait_and_check_window_show_up(self, window, timeout=10, interval=1):
+        if self.platformName == 'Android':
+            if self.driver.wait_activity(window, timeout, interval):
+               logging.debug("*****"+window+" OK*****") 
+            else:
+               logging.error("*****wait for "+window+" time out*****") 
    
-        self.assertTrue(activity == self.driver.current_activity)
+            self.assertTrue(window == self.driver.current_activity)
+        elif self.platformName == 'iOS':
+            wait = WebDriverWait(self, timeout, interval)
+            wait.until(lambda dr: dr.driver.find_element_by_string(window).is_displayed())
+            return self.driver.find_element_by_string(window)
+        else:
+            raise UnsupportedPlatformException
         
     @test_step_info
     def wait_widget(self, string, timeout=10, interval=1): 
@@ -196,7 +208,8 @@ class CommonTestStep(unittest.TestCase):
 
     @test_step_info
     def current_window(self):
-        return self.driver.current_activity
+        if self.platformName == 'Android':
+            return self.driver.current_activity
         
     @test_step_info
     def launch_app_if_installed(self, package, activity):
@@ -215,6 +228,8 @@ class CommonTestStep(unittest.TestCase):
             logging.debug("ime is %s", self.driver.active_ime_engine)
             self.driver.activate_ime_engine(self.ime)
             logging.debug("ime is %s", self.driver.active_ime_engine)
+            
+        textbox.clear()
 
         self.touchAction.press(textbox, self.tap_duration).release().perform()    
         textbox.send_keys(text)
@@ -451,7 +466,7 @@ class CommonTestStep(unittest.TestCase):
     @test_step_info        
     def swipe_widget_by_direction(self, string, direction, duration=500):
         widget = self.driver.find_element_by_string(string)
-        
+        #if self.platformName == 'Android':
         size = widget.size    
         logging.debug("size %s %s", size["width"], size["height"])
         lx = widget.location.get('x')
@@ -466,7 +481,7 @@ class CommonTestStep(unittest.TestCase):
 
         if duration == 500:
             duration = self.swipe_duration
-                
+            
         if direction == "up":
             self.driver.swipe(size['width']/2+lx, size['height']-1+ly, size['width']/2+lx, 1+ly,                duration)
         elif direction == "down":
@@ -477,6 +492,7 @@ class CommonTestStep(unittest.TestCase):
             self.driver.swipe(1+lx,               size['height']/2+ly, size['width']-1+lx, size['height']/2+ly, duration)
         else:
             raise WrongDirectionException
+
         
     @test_step_info        
     def flick_widget_by_direction(self, string, direction, duration=500):

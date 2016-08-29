@@ -8,9 +8,6 @@ import unittest
 
 
 from appium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
 
 from appium.webdriver.common.touch_action import TouchAction
 from appium.webdriver.common.multi_action import MultiAction
@@ -37,7 +34,7 @@ logging.basicConfig(level=logging.DEBUG,
                 format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
                 datefmt='%a, %d %b %Y %H:%M:%S',
                 filename='appium_python_client.log',
-                filemode='w')   
+                filemode='w')
 
 class KoodarIOSAssistantNavigationAtomTests(unittest.TestCase):
     def __init__(self, testStep, platformName):
@@ -62,8 +59,7 @@ class KoodarIOSAssistantNavigationAtomTests(unittest.TestCase):
             else:
                 logging.info("*****wait for login window time out*****") 
         elif self.platformName == 'iOS':
-            try:
-                self.testStep.wait_window("//UIAButton[@name='登录']", 3)
+            if self.testStep.wait_window("//UIAButton[@name='登录']"):
                 # input account and password
                 self.testStep.input_textbox("//UIATextField", u'13824470628')
                 #self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIATextField[1]").send_keys("13726260108")
@@ -71,14 +67,15 @@ class KoodarIOSAssistantNavigationAtomTests(unittest.TestCase):
                 #self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIASecureTextField[1]").send_keys("12345678")
                 self.testStep.tap_button("//UIAButton[@name='登录']")
                 #self.driver.find_element_by_xpath("//UIAApplication[1]/UIAWindow[1]/UIAButton[1]").click()
-            except:
+            else:
                 logging.info("*****wait for login window time out*****") 
     
-    def common_enter_navigation(self, launch_app=True):
+    def common_enter_navigation(self, launch_app=True, login=True):
         if launch_app == True:
             self.__common_launch_app()
-
-        self.__common_login()
+        
+        if login == True:
+            self.__common_login()
 
         if self.platformName == 'Android':
             if (self.testStep.current_window()).index("systems.xos.car"):
@@ -254,10 +251,11 @@ class KoodarIOSAssistantNavigationAtomTests(unittest.TestCase):
             #wait for the element loading
             self.testStep.wait_widget("//UIATableView/UIATableCell/UIAStaticText[contains(@label, '广州')]")
             #delete item from favorate list
+            # ios not support swipe flick action at appium 1.5.4
             #self.testStep.swipe_widget_by_direction("//UIATableView/UIATableCell[contains(@name, '广州')]", "left")
-            self.testStep.flick_widget_by_direction("//UIATableView/UIATableCell[contains(@name, '广州')]", "left")
+            # tap delete widget
+            self.testStep.tap_button("//UIAButton[@label='删除']")
             
-            sleep(10)
             #back to navigation window
             self.testStep.tap_button("//UIANavigationBar/UIAButton[@name='Back']")
 
@@ -374,7 +372,7 @@ class KoodarIOSAssistantNavigationAtomTests(unittest.TestCase):
 
             self.testStep.tap_button("//UIANavigationBar/UIAButton[@label='Back']")
 
-            self.common_enter_navigation(False) # enter navigation window without reset app
+            self.common_enter_navigation(False, False) # enter navigation window without reset app
         
             self.testStep.tap_widget("//UIASearchBar[@label='输入地址进行搜索']")
             
@@ -471,14 +469,19 @@ class KoodarIOSAssistantNavigationTests(unittest.TestCase):
         desired_caps['platformVersion'] = '9.3'
         desired_caps['deviceName'] = 'iPhone 6s Plus'
         desired_caps['autoLaunch'] = 'false'
+        # for eal device
+        #desired_caps['app'] = '/Users/enrico/Documents/Work/RD/Avocado/Test Design/koodar/appium/apps/Radish-Debug.ipa'
+        #desired_caps['bundleId'] = 'com.gexne.car.assistant'
+        #desired_caps['udid'] = '9c3bfe9438fcb01fde3cff021b8cfdff0cf2bc09' 
+        # for simulatorr
+        # .app for simulator
         desired_caps['unicodeKeyboard'] = 'True'
         desired_caps['resetKeyboard'] = 'True'
-        #desired_caps['bundleId'] = 'com.gexne.car.assistant.ih'
+        desired_caps['app'] = '/Users/enrico/Documents/Work/RD/Avocado/Test Design/koodar/appium/apps/Radish.app'
         desired_caps['language'] = 'zh-Hans' # for iphone simulator, input method should be force decided
         desired_caps['locale'] = 'zh_CN' # for iphone simulator, locale should be force decided
-        #desired_caps['udid'] = '9c3bfe9438fcb01fde3cff021b8cfdff0cf2bc09' # for real ios devices
 
-        self.testStep.init_appium(desired_caps, True)
+        self.testStep.init_appium(desired_caps, case_function_name = self.id().split(".")[-1])
         self.atomTest = KoodarIOSAssistantNavigationAtomTests(self.testStep, desired_caps['platformName'])
         self.atomTest.common_enter_navigation()
 
