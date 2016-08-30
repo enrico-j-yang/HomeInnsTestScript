@@ -107,17 +107,19 @@ class KoodarIOSAssistantAccountTests(unittest.TestCase):
         desired_caps['deviceName'] = 'iPhone 6s Plus'
         desired_caps['autoLaunch'] = 'False'
         # for eal device
-        #desired_caps['app'] = '/Users/enrico/Documents/Work/RD/Avocado/Test Design/koodar/appium/apps/Radish-Debug.ipa'
-        #desired_caps['bundleId'] = 'com.gexne.car.assistant'
-        #desired_caps['udid'] = '9c3bfe9438fcb01fde3cff021b8cfdff0cf2bc09' 
+        ''''
+        desired_caps['app'] = '/Users/enrico/Documents/Work/RD/Avocado/Test Design/koodar/appium/apps/Radish_Debug.ipa'
+        desired_caps['bundleId'] = 'com.gexne.car.assistant'
+        desired_caps['udid'] = '9c3bfe9438fcb01fde3cff021b8cfdff0cf2bc09' 
+        '''
         # for simulatorr
-        # .app for simulator
+        
         desired_caps['unicodeKeyboard'] = 'True'
         desired_caps['resetKeyboard'] = 'True'
         desired_caps['app'] = '/Users/enrico/Documents/Work/RD/Avocado/Test Design/koodar/appium/apps/Radish.app'
         desired_caps['language'] = 'zh-Hans' # for iphone simulator, input method should be force decided
         desired_caps['locale'] = 'zh_CN' # for iphone simulator, locale should be force decided
-        
+        s
         self.testStep.init_appium(desired_caps, case_function_name = self.id().split(".")[-1])
         self.atomTest = KoodarIOSAssistantAccountAtomTests(self.testStep, desired_caps['platformName'])
 

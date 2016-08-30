@@ -107,11 +107,13 @@ class KoodarIOSAssistantButtonTests(unittest.TestCase):
         desired_caps['deviceName'] = 'iPhone 6s Plus'
         desired_caps['autoLaunch'] = 'false'
         # for eal device
-        #desired_caps['app'] = '/Users/enrico/Documents/Work/RD/Avocado/Test Design/koodar/appium/apps/Radish-Debug.ipa'
-        #desired_caps['bundleId'] = 'com.gexne.car.assistant'
-        #desired_caps['udid'] = '9c3bfe9438fcb01fde3cff021b8cfdff0cf2bc09' 
+        ''''
+        desired_caps['app'] = '/Users/enrico/Documents/Work/RD/Avocado/Test Design/koodar/appium/apps/Radish_Debug.ipa'
+        desired_caps['bundleId'] = 'com.gexne.car.assistant'
+        desired_caps['udid'] = '9c3bfe9438fcb01fde3cff021b8cfdff0cf2bc09' 
+        '''
         # for simulatorr
-        # .app for simulator
+        
         desired_caps['unicodeKeyboard'] = 'True'
         desired_caps['resetKeyboard'] = 'True'
         desired_caps['app'] = '/Users/enrico/Documents/Work/RD/Avocado/Test Design/koodar/appium/apps/Radish.app'
