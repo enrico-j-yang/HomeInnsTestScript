@@ -1,0 +1,675 @@
+# -*- coding: utf-8 -*-
+
+import os
+import sys
+from time import sleep
+from types import *
+import logging
+import unittest
+
+#from appium import webdriver
+from appium.webdriver.common.touch_action import TouchAction
+from appium.webdriver.common.multi_action import MultiAction
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import NoSuchElementException
+
+from PIL import Image
+
+from mywebdriver import WebDriver
+from myelement import PositionProperty
+
+# Returns abs path relative to this file and not cwd
+PATH = lambda p: os.path.abspath(
+    os.path.join(os.path.dirname(__file__), p)
+)
+
+logging.basicConfig(level=logging.DEBUG,
+                format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
+                datefmt='%a, %d %b %Y %H:%M:%S',
+                filename='appium_python_client.log',
+                filemode='w')
+#################################################################################################
+#定义一个StreamHandler，将INFO级别或更高的日志信息打印到标准错误，并将其添加到当前的日志处理对象#
+console = logging.StreamHandler()
+console.setLevel(logging.ERROR)
+formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+console.setFormatter(formatter)
+logging.getLogger('').addHandler(console)
+#################################################################################################
+
+
+def test_step_info(func):
+    def _func(*args, **kw):
+        objPtr = args[0]
+        objPtr.step = objPtr.step + 1
+        logging.info("test step %d %s", objPtr.step, func.__name__)
+        result=func(*args, **kw)
+
+        if  objPtr.case_function_name != None:
+            # take screen shot after every step function
+            # it will slow down the test and use much more storage space
+            step_function_name = func.__name__
+            screenshotname = objPtr.case_function_name + "/step " + str(objPtr.step) + " "+ step_function_name + ".png"
+            objPtr.driver.get_screenshot_as_file(screenshotname)
+                
+        return result
+    return _func
+
+class UnknownStringException(Exception):
+    def __init__(self, value=None):
+        self.value = value
+
+class OutOfBoundException(Exception):
+    def __init__(self, value=None):
+        self.value = value
+
+class WrongDirectionException(Exception):
+    def __init__(self, value=None):
+        self.value = value
+
+class UnknownChoiceException(Exception):
+    def __init__(self, value=None):
+        self,value = value
+        
+class CommonTestStep(unittest.TestCase):
+    def __init__(self):
+        self.step = 0
+        self.tap_duration = 200
+        self.long_tap_duration = 1000
+        self.swipe_duration = 500
+    
+    def __capture_element(self, what):
+        begin = what.location
+        size = what.size
+        start_x = begin['x']
+        start_y = begin['y']
+        end_x = start_x + size['width']
+        end_y = start_y + size['height']
+        name = str(start_x)+'_'+str(start_y)+'_'+'_'+str(end_x)+'_'+str(end_y)
+        box = (start_x, start_y, end_x, end_y)
+        self.driver.get_screenshot_as_file('./' + 'full_screen.png')
+        image = Image.open('./' + 'full_screen.png')        #tmp是临时文件夹
+        newimage = image.crop(box)
+        name = './' + name + '.png'
+        newimage.save(name)
+        os.popen('rm ./full_screen.png')   
+        return name, size
+        
+    def __pil_image_similarity(self, filepath1, filepath2):
+        import math
+        import operator
+
+        image1 = Image.open(filepath1)
+        image2 = Image.open(filepath2)
+
+    #    image1 = get_thumbnail(img1)
+    #    image2 = get_thumbnail(img2)
+
+        h1 = image1.histogram()
+        h2 = image2.histogram()
+
+        rms = math.sqrt(reduce(operator.add,  list(map(lambda a,b: (a-b)**2, h1, h2)))/len(h1) )
+        return rms
+        
+    def __add_resolution_to_file_name(self, filename, resolution):
+        os.path.splitext(filename)
+        ref_image_true_name = os.path.splitext(filename)[0]
+        logging.debug("ref_image_true_name:%s", ref_image_true_name) 
+        ref_image_ext_name = os.path.splitext(filename)[1]
+        logging.debug("ref_image_ext_name:%s", ref_image_ext_name) 
+        
+        ref_image_height = resolution['height']
+        logging.debug("ref_image_height:%s", ref_image_height) 
+        
+        ref_image_width = resolution['width']
+        logging.debug("ref_image_width:%s", ref_image_width) 
+        
+        added_file_name = ref_image_true_name+'_'+str(ref_image_width)+'_'+str(ref_image_height)+ref_image_ext_name
+        logging.debug("added_file_name:%s", added_file_name)
+         
+        return added_file_name    
+        
+    def init_appium(self, desired_caps, case_function_name=None):
+        self.case_function_name = case_function_name
+        if case_function_name != None:
+            os.popen("mkdir "+self.case_function_name)
+            
+        self.platformName = desired_caps['platformName']
+        self.driver = WebDriver('http://localhost:4723/wd/hub', desired_caps)
+
+        try:
+            self.touchAction = TouchAction(self.driver)
+
+            self.wait = WebDriverWait(self.driver, 10, 1)
+        
+            if self.platformName == 'Android':    
+                self.ime = self.driver.active_ime_engine
+                logging.debug("self.ime is %s", self.ime)
+                if self.ime == u"io.appium.android.ime/.UnicodeIME":
+                    # switch to non-appium ime in order to avoid send_keys ramdom error for numbers and english charactors
+                    # please be noticed that ime must be switch appium unicdoe ime for inputing Chinese charactor
+                    imes = self.driver.available_ime_engines
+                    for i in [1, len(imes)]:
+                        if imes[i - 1] != u"io.appium.android.ime/.UnicodeIME":
+                            self.driver.activate_ime_engine(imes[i - 1])
+                            self.ime = imes[i - 1]
+                            logging.debug("self.ime is %s", self.ime)
+        except:
+            self.driver.quit()
+                       
+    def deinit_appium(self, screen_shot_file):
+        screenshotname = "./" + screen_shot_file + ".png"
+        sleep(1)
+        self.driver.get_screenshot_as_file(screenshotname)
+        self.driver.quit()
+
+    
+    def tap_button_if_exist(self, string):
+        try:
+            button = self.driver.find_element_by_string(string)        
+            self.touchAction.press(button, self.tap_duration).release().perform()
+            logging.debug("%s button exists", string)
+        except:
+            logging.debug("%s button not exist", string)
+            
+    
+    def calc_distance(self, ref_rect, rect, position):
+        # 判断两个矩形的距离
+        logging.debug(str(("ref_rect: ", ref_rect['leftside'], ref_rect['rightside'], ref_rect['topside'], ref_rect['bottomside'])))
+        logging.debug(str(("rect: ", rect['leftside'], rect['rightside'], rect['topside'], rect['bottomside'])))
+
+        # 假如矩形1的中心大于矩形2的左边，小于矩形2的右边，大于矩形2的上边，小于矩形2的下边
+        # 那么定义矩形1在矩形2之内，否则为在之外
+        if position == PositionProperty._NEAR:
+            logging.debug("(rect['leftside']+rect['rightside'])/2: " + str((rect['leftside']+rect['rightside'])/2))
+            logging.debug("(rect['topside']+rect['bottomside'])/2: " + str((rect['topside']+rect['bottomside'])/2))
+            
+            if ((rect['leftside']+rect['rightside'])/2<ref_rect['leftside'] or
+                (rect['leftside']+rect['rightside'])/2>ref_rect['rightside'] or
+                (rect['topside']+rect['bottomside'])/2<ref_rect['topside'] or
+                (rect['topside']+rect['bottomside'])/2>ref_rect['bottomside']):
+                x_dist = abs((rect['topside']+rect['bottomside'])/2 - (ref_rect['topside']+ref_rect['bottomside'])/2)
+                y_dist = abs((rect['topside']+rect['bottomside'])/2 - (ref_rect['topside']+ref_rect['bottomside'])/2)
+                dist = (x_dist**2+y_dist**2)**0.5
+            else:
+                dist = None
+                
+            logging.debug( "dist: " + str(dist))
+        
+            return dist
+        elif position == PositionProperty._LEFT:
+            logging.debug("(rect['leftside']+rect['rightside'])/2: " + str((rect['leftside']+rect['rightside'])/2))
+            
+            if (rect['leftside']-rect['rightside'])/2<ref_rect['leftside']:
+                x_dist = abs((rect['topside']+rect['bottomside'])/2 - (ref_rect['topside']+ref_rect['bottomside'])/2)
+            else:
+                x_dist = None
+                
+            logging.debug( "x_dist: " + str(x_dist))
+            
+            dist = x_dist
+            
+            return dist
+        elif position == PositionProperty._RIGHT:
+            logging.debug("(rect['leftside']+rect['rightside'])/2: " + str((rect['leftside']+rect['rightside'])/2))
+            
+            if (rect['leftside']+rect['rightside'])/2>ref_rect['rightside']:
+                x_dist = abs((rect['topside']+rect['bottomside'])/2 - (ref_rect['topside']+ref_rect['bottomside'])/2)
+            else:
+                x_dist = None
+                
+            logging.debug( "x_dist: " + str(x_dist))
+            
+            dist = x_dist
+            return dist
+        elif position == PositionProperty._ABOVE:
+            logging.debug("(rect['topside']+rect['bottomside'])/2: " + str((rect['topside']+rect['bottomside'])/2))
+            
+            if (rect['topside']+rect['bottomside'])/2<ref_rect['topside']:
+                y_dist = abs((rect['topside']+rect['bottomside'])/2 - (ref_rect['topside']+ref_rect['bottomside'])/2)
+            else:
+                y_dist = None
+                
+            logging.debug( "y_dist: " + str(y_dist))
+            
+            dist = y_dist
+            return dist
+        elif position == PositionProperty._UNDER:
+            logging.debug("(rect['topside']+rect['bottomside'])/2: " + str((rect['topside']+rect['bottomside'])/2))
+            
+            if (rect['topside']+rect['bottomside'])/2>ref_rect['bottomside']:
+                y_dist = abs((rect['topside']+rect['bottomside'])/2 - (ref_rect['topside']+ref_rect['bottomside'])/2)
+            else:
+                y_dist = None
+                
+            logging.debug( "y_dist: " + str(y_dist))
+            
+            dist = y_dist
+            return dist
+        # 假如矩形1的中心大于矩形2的左边，小于矩形2的右边，大于矩形2的上边，小于矩形2的下边
+        # 那么定义矩形1在矩形2之内
+        elif position == PositionProperty._IN:
+            logging.debug("(rect['leftside']+rect['rightside'])/2: " + str((rect['leftside']+rect['rightside'])/2))
+            logging.debug("(rect['topside']+rect['bottomside'])/2: " + str((rect['topside']+rect['bottomside'])/2))
+            
+            if ((rect['leftside']+rect['rightside'])/2>=ref_rect['leftside'] and
+                (rect['leftside']+rect['rightside'])/2<=ref_rect['rightside'] and
+                (rect['topside']+rect['bottomside'])/2>=ref_rect['topside'] and
+                (rect['topside']+rect['bottomside'])/2<=ref_rect['bottomside']):
+                x_dist = abs((rect['topside']+rect['bottomside'])/2 - (ref_rect['topside']+ref_rect['bottomside'])/2)
+                y_dist = abs((rect['topside']+rect['bottomside'])/2 - (ref_rect['topside']+ref_rect['bottomside'])/2)
+                dist = (x_dist**2+y_dist**2)**0.5
+            else:
+                dist = None
+                
+            logging.debug( "dist: " + str(dist))
+        
+            return dist
+        
+        
+    def near(self, string):
+        return self.driver.near(string)
+            
+    def above(self, string):
+        return self.driver.above(string)
+        
+    def under(self, string):
+        return self.driver.under(string)
+    
+    def left(sel, string):
+        return self.driver.left(string)
+    
+    def right(sel, string):
+        return self.driver.right(string)
+            
+    @test_step_info
+    def wait_window(self, window, timeout=10, interval=1):
+        if self.platformName == 'Android':
+            return self.driver.wait_activity(window, timeout, interval)
+        elif self.platformName == 'iOS':
+            wait = WebDriverWait(self, timeout, interval)
+            wait.until(lambda dr: dr.driver.find_element_by_string(window).is_displayed())
+            return self.driver.find_element_by_string(window)
+        else:
+            raise UnsupportedPlatformException
+
+    # function wait for act activity and check it show up or not within duration specified by parameter timeout
+    # checking interval is specified by parameter interval 
+    @test_step_info
+    def wait_and_check_window_show_up(self, window, timeout=10, interval=1):
+        if self.platformName == 'Android':
+            if self.driver.wait_activity(window, timeout, interval):
+               logging.debug("*****"+window+" OK*****") 
+            else:
+               logging.error("*****wait for "+window+" time out*****") 
+   
+            self.assertTrue(window == self.driver.current_activity)
+        elif self.platformName == 'iOS':
+            wait = WebDriverWait(self, timeout, interval)
+            wait.until(lambda dr: dr.driver.find_element_by_string(window).is_displayed())
+            return self.driver.find_element_by_string(window)
+        else:
+            raise UnsupportedPlatformException
+        
+    @test_step_info
+    def has_widget(self, string, posprolist=None):
+        if posprolist == None:
+            logging.debug( "no position limitation found")
+            return self.driver.find_element_by_string(string)
+        else:
+            logging.debug("posprolist %d", len(posprolist))
+            candidates = self.driver.find_elements_by_string(string)
+            logging.debug("candidates %s", str(candidates))
+            qualified_candidates = candidates
+            for ref_pos in posprolist:
+                rect_distance_dic = {}
+                candidates = qualified_candidates
+                qualified_candidates = []
+                for element in candidates:
+                    can_rect = {'leftside': element.location.get('x'), 
+                                'topside': element.location.get('y'),
+                                'rightside': element.location.get('x')+element.size['width'], 
+                                'bottomside': element.location.get('y')+element.size['height']}
+                    logging.debug("candidate rect %s", str(can_rect))
+                    #distance = self.calc_distance(ref_pos.rect, can_rect, PositionProperty._NEAR)
+                    distance = self.calc_distance(ref_pos.rect, can_rect, ref_pos.pos)
+                    logging.debug(str((element, "distance: ", distance)))
+                    if distance != None:
+                        rect_distance_dic[distance] = element
+                        qualified_candidates.append(element)
+                        logging.debug("rect_distance_dic %s", str(rect_distance_dic))
+                        
+        if len(qualified_candidates) == 0:
+            raise NoSuchElementException
+        else:
+            return qualified_candidates[0]
+                
+                    
+    @test_step_info
+    def wait_widget(self, string, timeout=10, interval=1): 
+        wait = WebDriverWait(self.driver, timeout, interval)
+        wait.until(lambda dr: dr.find_element_by_string(string).is_displayed())
+
+    @test_step_info
+    def current_window(self):
+        if self.platformName == 'Android':
+            return self.driver.current_activity
+        
+    @test_step_info
+    def launch_app_if_installed(self, package, activity):
+        el = self.driver.is_app_installed(package)
+        self.assertTrue(el)
+        el = self.driver.start_activity(package, activity)
+        self.assertTrue(el)
+    
+    @test_step_info    
+    def input_textbox(self, string, text):
+        textbox = self.driver.find_element_by_string(string)
+    
+        if self.platformName == 'Android':
+            # switch to non-appium ime in order to avoid send_keys ramdom error for numbers and english charactors
+            # please be noticed that ime must be switch appium unicdoe ime for inputing Chinese charactor
+            logging.debug("ime is %s", self.driver.active_ime_engine)
+            self.driver.activate_ime_engine(self.ime)
+            logging.debug("ime is %s", self.driver.active_ime_engine)
+            
+        textbox.clear()
+
+        self.touchAction.press(textbox, self.tap_duration).release().perform()    
+        textbox.send_keys(text)
+    
+    @test_step_info    
+    def input_secure_textbox(self, string, text):
+        textbox = self.driver.find_element_by_string(string)
+    
+        if self.platformName == 'Android':
+            # switch to non-appium ime in order to avoid send_keys ramdom error for numbers and english charactors
+            # please be noticed that ime must be switch appium unicdoe ime for inputing Chinese charactor
+            logging.debug("ime is %s", self.driver.active_ime_engine)
+            self.driver.activate_ime_engine(self.ime)
+            logging.debug("ime is %s", self.driver.active_ime_engine)
+        
+        self.touchAction.press(textbox, self.tap_duration).release().perform() # because send_keys miss first character, so here come one blank as to avoid this problem
+        textbox.send_keys(text)
+    
+    @test_step_info
+    def input_textbox_uft8(self, string, text, pinyin=None):
+        textbox = self.driver.find_element_by_string(string)
+    
+        if self.platformName == 'Android':
+            logging.debug("ime is %s", self.driver.active_ime_engine)
+            self.driver.activate_ime_engine(u"io.appium.android.ime/.UnicodeIME")
+            logging.debug("ime is %s", self.driver.active_ime_engine)
+            
+        self.touchAction.press(textbox, self.tap_duration).release().perform()
+        
+        if self.platformName == 'iOS':
+            try:
+                self.driver.find_element_by_string("//UIAKey[@label='Pinyin-Plane']")
+            except NoSuchElementException:
+                nextKeyBoard = self.driver.find_element_by_string("//UIAButton[@label='Next keyboard']")
+                self.touchAction.press(nextKeyBoard, self.tap_duration).release().perform()
+                self.driver.find_element_by_string("//UIATableCell[contains(@label, '简体拼音')]").click()
+            except:
+                logging.error("Unknown exception captured")
+                
+            if pinyin!=None:
+                textbox.send_keys(pinyin)
+                destination = self.driver.find_element_by_string("//UIACollectionCell[contains(@label, '"+text+"')]")
+                self.touchAction.press(destination, self.tap_duration).release().perform()
+                
+        elif self.platformName == 'Android':
+            textbox.send_keys(text)
+    
+        if self.platformName == 'Android':
+            self.driver.activate_ime_engine(self.ime)
+            logging.debug("ime is %s", self.driver.active_ime_engine)
+        
+    
+    @test_step_info    
+    def tap_button(self, string):
+        button = self.driver.find_element_by_string(string)
+        self.touchAction.press(button, self.tap_duration).release().perform()
+    
+    @test_step_info    
+    def tap_widget(self, string):
+        widget = self.driver.find_element_by_string(string)
+        self.touchAction.press(widget, self.tap_duration).release().perform()
+        
+    @test_step_info
+    def tap_permision_widget(self, choice="accept"):
+        if choice == "accept":
+            if self.platformName == 'Android':
+                # in order to close permision widget, here is script to ensure script can deal with MIUI and Huawei system permision widget
+                self.tap_button_if_exist("//android.widget.Button[@text='允许']")
+                self.tap_button_if_exist("com.huawei.systemmanager:id/btn_allow")
+            elif self.platformName == 'iOS':
+                try:
+                    self.driver.switch_to_alert().accept()
+                except:
+                    logging.info("no alert exist")
+            else:
+                raise UnsupportedPlatformException
+                
+        elif choice == "deny":
+            if self.platformName == 'Android':
+                # in order to close permision widget, here is script to ensure script can deal with MIUI and Huawei system permision widget
+                self.tap_button_if_exist("//android.widget.Button[@text='拒绝']")
+                self.tap_button_if_exist("com.huawei.systemmanager:id/btn_forbbid")
+            elif self.platformName == 'iOS':
+                self.driver.switch_to_alert().deny()
+            else:
+                raise UnsupportedPlatformException
+        else:
+            raise UnknownChoiceException 
+            
+    @test_step_info
+    def tap_button_sibling_widget(self, button_string, widget_string):
+        widget = self.driver.find_element_by_string(widget_string)
+        
+        if (self.driver.check_string_type(button_string) == "id"):
+            logging.debug("string is id")
+            button = widget.parent.find_element_by_id(button_string)
+        elif (self.driver.check_string_type(button_string) == "xpath"):
+            logging.debug("string is xpath")
+            button = widget.parent.find_element_by_xpath(button_string)
+        else:
+            logging.error("string is unknown")
+            raise UnknownStringException 
+            
+        self.assertTrue(button)
+        self.touchAction.press(button, self.tap_duration).release().perform()
+
+    @test_step_info
+    def long_tap_widget(self, string, x=0, y=0, duration=1000):
+        widget = self.driver.find_element_by_string(string)
+        size = widget.size
+        if x=="middle":
+            x = size["width"] / 2
+        
+        if y=="middle":
+            y = size["height"]/ 2
+        
+        if x==0 and y==0:
+            size = widget.size
+            x = size["width"] / 2
+            y = size["height"]/ 2
+
+        if duration == 1000:
+            duration = self.long_tap_duration
+            
+        self.touchAction.long_press(widget, x, y, duration).release().perform()
+        
+    @test_step_info
+    def precise_tap_widget(self, string, x=0, y=0, duration=200, allowOutOfBound=False):
+        widget = self.driver.find_element_by_string(string)
+        lx = widget.location.get('x')
+        ly = widget.location.get('y')
+
+        logging.debug("location x:%s location y:%s", lx, ly)
+        size = widget.size
+        logging.debug("size %s %s", size["width"], size["height"])
+        if x=="middle":
+            x = size["width"] / 2
+        
+        if y=="middle":
+            y = size["height"]/ 2
+        
+        if x==0 and y==0:
+            x = size["width"] / 2
+            y = size["height"]/ 2
+        
+        
+        window_size = self.driver.get_window_size()
+        logging.debug("window size %s %s", window_size["width"], window_size["height"])
+
+        try:
+            if (x>size['width'] or x<0
+            or y>size['height'] or y<0
+            or x+lx>window_size['width']
+            or y+ly>window_size['height']):
+                raise OutOfBoundException
+        except OutOfBoundException:
+            if not allowOutOfBound:
+                raise OutOfBoundException
+
+        if duration == 200:
+            duration = self.tap_duration
+            
+        self.touchAction.press(widget, x+lx, y+ly).wait(duration).release().perform()
+        
+    @test_step_info
+    def tap_widget_if_image_alike(self, string, ref_image_name, after_image_name=None):
+        star_btn = self.driver.find_element_by_string(string)
+        elementImageName, elementImageSize = self.__capture_element(star_btn)
+        logging.debug("elementImageSize:%s", elementImageSize) 
+        added_file_name = self.__add_resolution_to_file_name(ref_image_name, elementImageSize)
+        
+        if self.__pil_image_similarity(added_file_name, elementImageName) == 0:
+            self.touchAction.press(star_btn, self.tap_duration).release().perform()
+        else:
+            logging.debug("image not alike")
+            self.assertTrue(0)
+        
+        if after_image_name != None:
+            elementImageName, elementImageSize = self.__capture_element(star_btn)
+            added_file_name = self.__add_resolution_to_file_name(after_image_name, elementImageSize)
+            similarity = self.__pil_image_similarity(added_file_name, elementImageName)
+            self.assertEqual(0, similarity)
+            
+    @test_step_info
+    def check_widget_if_image_alike(self, string, ref_image_name):
+        star_btn = self.driver.find_element_by_string(string)
+        elementImageName, elementImageSize = self.__capture_element(star_btn)
+        logging.debug("elementImageSize:%s", elementImageSize) 
+        added_file_name = self.__add_resolution_to_file_name(ref_image_name, elementImageSize)
+        
+        if self.__pil_image_similarity(added_file_name, elementImageName) == 0:
+            self.touchAction.press(star_btn).release().perform()
+        else:
+            logging.debug("image not alike")
+            self.assertTrue(0)
+        
+    @test_step_info
+    def swipe_widget(self, string, startx=0, starty=0, endx=0, endy=0, duration=500):
+        widget = self.driver.find_element_by_string(string)
+        size = widget.size
+        logging.debug("size %d %d", size["width"], size["height"])
+        if startx=="middle":
+            startx = size["width"] / 2
+        
+        if starty=="middle":
+            starty = size["height"]/ 2
+        
+        if endx=="middle":
+            endx = size["width"] / 2
+        
+        if endy=="middle":
+            endy = size["height"]/ 2
+        logging.debug("startx:%d starty:%d endx:%d endy:%d", startx, starty, endx, endy)
+
+        lx = widget.location.get('x')
+        ly = widget.location.get('y')
+        logging.debug("location x:%d location y:%d", ly, ly)
+        window_size = self.driver.get_window_size()
+        logging.debug("window size %d %d", window_size["width"], window_size["height"])
+        if (startx>size['width'] or startx<0
+        or starty>size['height'] or starty<0
+        or endx>size['width'] or endx<0
+        or endy>size['height'] or endy<0
+        or startx+lx>window_size['width'] 
+        or starty+ly>window_size['height'] 
+        or endx+lx>window_size['width']
+        or endy+ly>window_size['height']):
+            raise OutOfBoundException
+
+        if duration == 500:
+            duration = self.swipe_duration
+        self.driver.swipe(startx + lx, starty + ly, endx + lx, endy + ly, duration)
+        
+    @test_step_info        
+    def swipe_widget_by_direction(self, string, direction, duration=500):
+        widget = self.driver.find_element_by_string(string)
+        #if self.platformName == 'Android':
+        size = widget.size    
+        logging.debug("size %s %s", size["width"], size["height"])
+        lx = widget.location.get('x')
+        ly = widget.location.get('y')
+        logging.debug("location x:%s location y:%s", lx, ly)
+        window_size = self.driver.get_window_size()
+        logging.debug("window size %s %s", window_size["width"], window_size["height"])
+
+        if (size['width']/2+lx>window_size['width'] 
+        or size['height']/2+ly>window_size['height']):
+            raise OutOfBoundException
+
+        if duration == 500:
+            duration = self.swipe_duration
+            
+        if direction == "up":
+            self.driver.swipe(size['width']/2+lx, size['height']-1+ly, size['width']/2+lx, 1+ly,                duration)
+        elif direction == "down":
+            self.driver.swipe(size['width']/2+lx, 1+ly,                size['width']/2+lx, size['height']-1+ly, duration)
+        elif direction == "left":
+            self.driver.swipe(size['width']-1+lx, size['height']/2+ly, 1+lx,               size['height']/2+ly, duration)
+        elif direction == "right":
+            self.driver.swipe(1+lx,               size['height']/2+ly, size['width']-1+lx, size['height']/2+ly, duration)
+        else:
+            raise WrongDirectionException
+
+        
+    @test_step_info        
+    def flick_widget_by_direction(self, string, direction, duration=500):
+        widget = self.driver.find_element_by_string(string)
+
+        size = widget.size    
+        logging.info("size %s %s", size["width"], size["height"])
+        lx = widget.location.get('x')
+        ly = widget.location.get('y')
+        logging.info("location x:%s location y:%s", lx, ly)
+        window_size = self.driver.get_window_size()
+        logging.info("window size %s %s", window_size["width"], window_size["height"])
+
+        if (size['width']/2+lx>window_size['width'] 
+        or size['height']/2+ly>window_size['height']):
+            raise OutOfBoundException
+
+        if duration == 500:
+            duration = self.swipe_duration
+        
+        if direction == "up":
+            self.driver.flick(size['width']/2+lx, size['height']-1+ly, size['width']/2+lx, 1+ly)
+        elif direction == "down":
+            self.driver.flick(size['width']/2+lx, 1+ly,                size['width']/2+lx, size['height']-1+ly)
+        elif direction == "left":
+            self.driver.flick(size['width']-1+lx, size['height']/2+ly, 1+lx,               size['height']/2+ly)
+        elif direction == "right":
+            self.driver.flick(1+lx,               size['height']/2+ly, size['width']-1+lx, size['height']/2+ly)
+        else:
+            raise WrongDirectionException
+    
+    @test_step_info
+    def pinch_widget(self, string, percentage=200, steps=50):
+        widget = self.driver.find_element_by_string(string)
+        
+        self.driver.pinch(widget, percentage, steps)
