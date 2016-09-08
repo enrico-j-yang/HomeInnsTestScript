@@ -43,7 +43,6 @@ class UnknownDateError(Exception):
         self.value = value
         
         
-        
 def _parse_date(checkin):
     today = datetime.date.today()
     logging.debug("today:%s", today)
@@ -73,54 +72,24 @@ def _parse_date(checkin):
         else:
             # TODO
             raise NotImplementedError(u'中文天数未实现处理')
+    elif (u"月" in checkin) and (u"号" in checkin):
+        month = checkin[0:checkin.index(u"月")]
+        logging.debug("month:%s", month)
+        day = checkin[checkin.index(u"月")+1:checkin.index(u"号")]
+        logging.debug("day:%s", day)
+        ret_date = today.replace(month=int(month)).replace(day=int(day))
+    elif (u"月" in checkin) and (u"日" in checkin):
+        month = checkin[0:checkin.index(u"月")]
+        logging.debug("month:%s", month)
+        day = checkin[checkin.index(u"月")+1:checkin.index(u"日")]
+        logging.debug("day:%s", day)
+        ret_date = today.replace(month=int(month)).replace(day=int(day))
     else:
         raise UnknownDateError
         
     return ret_date
         
-def _tap_date_in_calendar(testStep, des_date):
-    logging.info("des_date:%s", des_date)
-    today = datetime.date.today()
-
-    
-    if des_date.month != today.month:
         
-        # swipe up calendar certain times according to month count from today
-        if des_date.month > today.month:
-            for i in range(1, (des_date-today).month):
-                try:
-                    lastdayPos = testStep.has_widget("//*[@text='28']")
-                except NoSuchElementException:
-                    lastdayPos = testStep.has_widget("//*[@text='27']")
-                try:
-                    firstdayPos = testStep.has_widget("//*[@text='1']")
-                except NoSuchElementException:
-                    firstdayPos = testStep.has_widget("//*[@text='2']")
-                testStep.driver.swipe(int(lastdayPos.location.get('x')), int(lastdayPos.location.get('y')), 
-                                        int(firstdayPos.location.get('x')), int(firstdayPos.location.get('y')))
-        else:
-            for i in range(1, (today-des_date).month):
-                try:
-                    lastdayPos = testStep.has_widget("//*[@text='1']")
-                except NoSuchElementException:
-                    lastdayPos = testStep.has_widget("//*[@text='2']")
-                try:
-                    firstdayPos = testStep.has_widget("//*[@text='28']")
-                except NoSuchElementException:
-                    firstdayPos = testStep.has_widget("//*[@text='27']")
-                testStep.driver.swipe(int(lastdayPos.location.get('x')), int(lastdayPos.location.get('y')), 
-                                        int(firstdayPos.location.get('x')), int(firstdayPos.location.get('y')))
-                                        
-    checkinmonth = testStep.has_widget("//*[@text='"+str(des_date.year)+"年"+str(des_date.month)+"月']")
-    
-    try:
-        checkinday = checkinmonth.parent.find_element_by_string("//*[@text='"+str(des_date.day)+"']")
-    except NoSuchElementException: 
-        checkinmonth = testStep.has_widget("//*[@text='"+str(des_date.year)+"年"+str(des_date.month)+"月']")
-        checkinday = checkinmonth.parent.find_element_by_string("//*[@text='"+str(des_date.day)+"']")
-        
-    testStep.touchAction.press(checkinday).release().perform()
-    
 @given(u'手机已安装掌上如家')
 def step_impl(context):
     el = context.testStep.driver.is_app_installed('com.ziipin.homeinn')
@@ -198,8 +167,8 @@ def step_impl(context, widget_text):
 @given(u'“{current_pos}”为“{widget_text}”')
 def step_impl(context, current_pos, widget_text):
     
-    element = context.testStep.has_widget("//*[@text='"+widget_text+"']", context.testStep.under(current_pos)+context.testStep.above("最近选择"))
-    #element = context.testStep.has_widget("//*[@text='"+widget_text+"']", context.testStep.near(current_pos))
+    element = context.testStep.has_widget("//*[@text='"+widget_text+"']", context.testStep._under(current_pos)+context.testStep._above("最近选择"))
+    #element = context.testStep.has_widget("//*[@text='"+widget_text+"']", context.testStep._near(current_pos))
     context.element = element
 
 @when(u'用户点击以上的“{widget_text}”')
@@ -263,7 +232,7 @@ def step_impl(context, widget_text):
 @when(u'用户点击入住日期为“{checkin}”')
 def step_impl(context, checkin):
     context.check_in_date = _parse_date(checkin)
-    _tap_date_in_calendar(context.testStep, context.check_in_date)
+    context.testStep.tap_date_in_calendar(context.check_in_date)
         
 @then(u'入住日期显示为“{checkin}”')
 def step_impl(context, checkin):
@@ -275,7 +244,7 @@ def step_impl(context, checkin):
 @when(u'用户点击离店日期为“{checkout}”')
 def step_impl(context, checkout):
     context.check_out_date = _parse_date(checkout)
-    _tap_date_in_calendar(context.testStep, context.check_out_date)
+    context.testStep.tap_date_in_calendar(context.check_out_date)
 
 @then(u'“过夜房”页面显示为“{checkin}”入住，“{checkout}”离店')
 def step_impl(context, checkin, checkout):

@@ -30,19 +30,14 @@ else:
     RESOURCE_PATH = "assistant/resource/"
     
 def before_all(context):
-    if not context.config.log_capture:
-        logging.basicConfig(level=logging.DEBUG)
+    context = context
+    #if not context.config.log_capture:
+    #    logging.basicConfig(level=logging.DEBUG)
     
 def after_all(context):
     context = context
     
 def before_feature(context, feature):
-    context = context
-
-def after_feature(context, feature):
-    context = context
-    
-def before_scenario(context, scenario):
     context.testStep = CommonTestStep()
     
     desired_caps = {}
@@ -54,10 +49,18 @@ def before_scenario(context, scenario):
     desired_caps['autoLaunch'] = 'false'
     desired_caps['unicodeKeyboard'] = 'True'
     desired_caps['resetKeyboard'] = 'True'
+    desired_caps['udid'] = '022MWW1465012734'#Huawei P7
+    #desired_caps['udid'] = '50da53b57d32'#Xiaomi Hongmi 2
 
     context.testStep.init_appium(desired_caps)
     context.touchAction = TouchAction(context.testStep.driver)
+
+def after_feature(context, feature):
+    #case_function_name = feature.name
+    context.testStep.deinit_appium()
+
+def before_scenario(context, scenario):
+    context.testStep.driver.launch_app()
     
 def after_scenario(context, scenario):
-    case_function_name = scenario.name
-    context.testStep.deinit_appium(case_function_name)
+    context.testStep.driver.close_app()

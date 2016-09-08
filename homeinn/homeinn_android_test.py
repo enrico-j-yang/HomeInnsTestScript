@@ -31,7 +31,10 @@ class KoodarAssistantAndroidTests(unittest.TestCase):
         desired_caps = {}
         desired_caps['platformName'] = 'Android'
         desired_caps['platformVersion'] = '5.1'
-        desired_caps['deviceName'] = 'Android HUD'
+        desired_caps['deviceName'] = 'Android'
+        desired_caps['appPackage'] = 'com.ziipin.homeinn'
+        desired_caps['appActivity'] = '.activity.SplashActivity'
+        
         #desired_caps['app'] = PATH(
         #    '/Users/enrico/Desktop/掌上如家_1470885797659.apk'
         #)
