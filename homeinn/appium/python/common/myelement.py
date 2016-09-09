@@ -36,12 +36,6 @@ class PositionProperty(object):
     def pos(self):
         return self._pos
 
-logging.basicConfig(level=logging.ERROR,
-                format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
-                datefmt='%a, %d %b %Y %H:%M:%S',
-                filename='appium_python_client.log',
-                filemode='w')
-
 class WebElement(AppiumWebElement):
     _porsition_property = PositionProperty()
     

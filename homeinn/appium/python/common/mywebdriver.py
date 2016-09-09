@@ -17,14 +17,6 @@ PATH = lambda p: os.path.abspath(
     os.path.join(os.path.dirname(__file__), p)
 )
 
-logging.basicConfig(level=logging.INFO,
-                format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
-                datefmt='%a, %d %b %Y %H:%M:%S',
-                filename='appium_python_client.log',
-                filemode='w')
-
-
-
 
 class UnknownStringException(Exception):
     def __init__(self, value=None):
@@ -176,24 +168,24 @@ class WebDriver(webdriver.Remote):
             qualified_candidates = candidates
             for ref_pos in posprolist:
                 logging.debug("ref_pos.pos:%d", ref_pos.pos)
-                logging.info("ref_pos.pos:%s", str(ref_pos.rect))
+                logging.debug("ref_pos.pos:%s", str(ref_pos.rect))
                 rect_distance_dic = {}
                 candidates = qualified_candidates
-                logging.info("candidates count %s", len(candidates))
+                logging.debug("candidates count %s", len(candidates))
                 qualified_candidates = []
                 for element in candidates:
                     can_rect = {'leftside': element.location.get('x'), 
                                 'topside': element.location.get('y'),
                                 'rightside': element.location.get('x')+element.size['width'], 
                                 'bottomside': element.location.get('y')+element.size['height']}
-                    logging.info("candidate %s rect: %s", element.text, str(can_rect))
+                    logging.debug("candidate %s rect: %s", element.text, str(can_rect))
                     distance = self.calc_distance(ref_pos.rect, can_rect, ref_pos.pos)
-                    logging.info("candidate %s distance:%s", element.text, str(distance))
+                    logging.debug("candidate %s distance:%s", element.text, str(distance))
                     if distance != None:
                         rect_distance_dic[distance] = element
                         qualified_candidates.append(element)
-                        logging.info("add element %s", element.text)
-                        logging.info("rect_distance_dic %s", str(rect_distance_dic))
+                        logging.debug("add element %s", element.text)
+                        logging.debug("rect_distance_dic %s", str(rect_distance_dic))
 
             #assert len(rect_distance_dic)==len(qualified_candidates)
             
