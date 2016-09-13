@@ -17,7 +17,6 @@ PATH = lambda p: os.path.abspath(
     os.path.join(os.path.dirname(__file__), p)
 )
 
-
 class UnknownStringException(Exception):
     def __init__(self, value=None):
         self.value = value
@@ -168,24 +167,24 @@ class WebDriver(webdriver.Remote):
             qualified_candidates = candidates
             for ref_pos in posprolist:
                 logging.debug("ref_pos.pos:%d", ref_pos.pos)
-                logging.debug("ref_pos.pos:%s", str(ref_pos.rect))
+                logging.info("ref_pos.pos:%s", str(ref_pos.rect))
                 rect_distance_dic = {}
                 candidates = qualified_candidates
-                logging.debug("candidates count %s", len(candidates))
+                logging.info("candidates count %s", len(candidates))
                 qualified_candidates = []
                 for element in candidates:
                     can_rect = {'leftside': element.location.get('x'), 
                                 'topside': element.location.get('y'),
                                 'rightside': element.location.get('x')+element.size['width'], 
                                 'bottomside': element.location.get('y')+element.size['height']}
-                    logging.debug("candidate %s rect: %s", element.text, str(can_rect))
+                    logging.info("candidate %s rect: %s", element.text, str(can_rect))
                     distance = self.calc_distance(ref_pos.rect, can_rect, ref_pos.pos)
-                    logging.debug("candidate %s distance:%s", element.text, str(distance))
+                    logging.info("candidate %s distance:%s", element.text, str(distance))
                     if distance != None:
                         rect_distance_dic[distance] = element
                         qualified_candidates.append(element)
-                        logging.debug("add element %s", element.text)
-                        logging.debug("rect_distance_dic %s", str(rect_distance_dic))
+                        logging.info("add element %s", element.text)
+                        logging.info("rect_distance_dic %s", str(rect_distance_dic))
 
             #assert len(rect_distance_dic)==len(qualified_candidates)
             
@@ -239,7 +238,16 @@ class WebDriver(webdriver.Remote):
                 try:
                     element = self.find_element_by_string("//*[@name='"+string+"']")
                 except NoSuchElementException:
-                    raise NoSuchElementException
+                    try:
+                        element = self.find_element_by_string("//*[contains(@text, '"+string+"')]")
+                    except NoSuchElementException:
+                        try:
+                            element = self.find_element_by_string("//*[contains(@label, '"+string+"')]")
+                        except NoSuchElementException:
+                            try:
+                                element = self.find_element_by_string("//*[contains(@name, '"+string+"')]")
+                            except NoSuchElementException:
+                                raise NoSuchElementException
                     
         rect = {'leftside': element.location.get('x'), 
                 'topside': element.location.get('y'),
