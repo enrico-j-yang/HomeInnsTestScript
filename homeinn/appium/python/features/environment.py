@@ -61,7 +61,12 @@ def after_feature(context, feature):
     context.testStep.deinit_appium()
 
 def before_scenario(context, scenario):
-    context.testStep.driver.launch_app()
+    context = context
+    #context.testStep.driver.launch_app()
     
 def after_scenario(context, scenario):
+    #context = context
+    screenshotname = "./" + scenario.name + ".png"
+    sleep(1)
+    context.testStep.driver.get_screenshot_as_file(screenshotname)
     context.testStep.driver.close_app()
