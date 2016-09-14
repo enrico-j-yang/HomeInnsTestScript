@@ -227,7 +227,7 @@ class CommonTestStep(unittest.TestCase):
     
         return day_widget
     
-    def _swipe_to_distination_half_by_half(self, start_element, end_element, distination_side="top2bottom"):
+    def _swipe_to_distination_half_by_half(self, start_element, end_element, distination_side="top2bottom", one_step=False):
         if distination_side == "top2top":
             start_x = start_element.location.get('x')+start_element.size['width']/2
             start_y = start_element.location.get('y')
@@ -248,41 +248,45 @@ class CommonTestStep(unittest.TestCase):
             start_y = start_element.location.get('y')+start_element.size['height']
             end_x = start_element.location.get('x')+start_element.size['width']/2
             end_y = end_element.location.get('y')+end_element.size['height']
-        
+    
         window_size = self.driver.get_window_size()
         window_max_x = window_size['width']
         window_max_y = window_size['height']
         window_min_x = 0
         window_min_y = 0
-        
+    
         if start_x == window_min_x:
             start_x = 1
         elif start_x == window_max_x:
             start_x = window_max_x - 1
-            
+        
         if end_x == window_min_x:
             end_x = 1
         elif end_x == window_max_x:
             end_x = window_max_x - 1
-        
+    
         if start_y == window_min_y:
             start_y = 1
         elif start_y == window_max_y:
             start_y = window_max_y - 1
-            
+        
         if end_y == window_min_y:
             end_y = 1
         elif end_y == window_max_y:
             end_y = window_max_y - 1
         
-
-        logging.debug("swipe:%d, %d", start_y, end_y)
-        while (abs(start_y-end_y)>50):
-            self.driver.swipe(start_x, start_y, start_x, (start_y+end_y)/2)
-            start_y = (start_y+end_y)/2
+        if one_step == False:
+            logging.debug("swipe:%d, %d", start_y, end_y)
+            while (abs(start_y-end_y)>100):
+                self.driver.swipe(start_x, start_y, start_x, (start_y+end_y)/2)
+                start_y = (start_y+end_y)/2
+                
             
         logging.debug("final swipe:%d, %d", start_y, end_y)
         self.driver.swipe(start_x, start_y, start_x, end_y)
+                
+        return False
+        
     @test_step_info
     def tap_date_in_calendar(self, des_date):
         logging.debug("des_date:%s", des_date)

@@ -259,7 +259,7 @@ class WebDriver(webdriver.Remote):
         return posPro
 
     def _near(self, string):
-        if isinstance(string, str):
+        if isinstance(string, unicode) or isinstance(string, str):
             posPro = self.get_position_property_of_element_by_visible_text(string, PositionProperty._NEAR)
         elif isinstance(string, MyElement):
             rect = {'leftside': string.location.get('x'), 
@@ -275,7 +275,7 @@ class WebDriver(webdriver.Remote):
         return posprolist
             
     def _above(self, string):
-        if isinstance(string, str):
+        if isinstance(string, unicode) or isinstance(string, str):
             posPro = self.get_position_property_of_element_by_visible_text(string, PositionProperty._ABOVE)
         elif isinstance(string, MyElement):
             rect = {'leftside': string.location.get('x'), 
@@ -292,14 +292,14 @@ class WebDriver(webdriver.Remote):
         return posprolist
         
     def _under(self, string):
-        if isinstance(string, str):
+        if isinstance(string, unicode) or isinstance(string, str):
             posPro = self.get_position_property_of_element_by_visible_text(string, PositionProperty._UNDER)
         elif isinstance(string, MyElement):
             rect = {'leftside': string.location.get('x'), 
                     'topside': string.location.get('y'),
                     'rightside': string.location.get('x')+string.size['width'], 
                     'bottomside': string.location.get('y')+string.size['height']}
-            logging.info("rect:"+str(rect))
+            logging.debug("rect:"+str(rect))
             posPro = PositionProperty(rect, PositionProperty._UNDER)
         else:
             logging.error("string class is: %s", string.__class__.__name__)
@@ -308,7 +308,7 @@ class WebDriver(webdriver.Remote):
         return posprolist
     
     def _left(self, string):
-        if isinstance(string, str):
+        if isinstance(string, unicode) or isinstance(string, str):
             posPro = self.get_position_property_of_element_by_visible_text(string, PositionProperty._LEFT)
         elif isinstance(string, MyElement):
             rect = {'leftside': string.location.get('x'), 
@@ -324,14 +324,14 @@ class WebDriver(webdriver.Remote):
         return posprolist
     
     def _right(self, string):
-        if isinstance(string, str):
+        if isinstance(string, unicode) or isinstance(string, str):
             posPro = self.get_position_property_of_element_by_visible_text(string, PositionProperty._RIGHT)
         elif isinstance(string, MyElement):
             rect = {'leftside': string.location.get('x'), 
                     'topside': string.location.get('y'),
                     'rightside': string.location.get('x')+string.size['width'], 
                     'bottomside': string.location.get('y')+string.size['height']}
-            logging.info("rect:"+str(rect))
+            logging.debug("rect:"+str(rect))
             posPro = PositionProperty(rect, PositionProperty._RIGHT)
         else:
             logging.error("string class is: %s", string.__class__.__name__)
@@ -340,7 +340,7 @@ class WebDriver(webdriver.Remote):
         return posprolist
     
     def _in(self, string):
-        if isinstance(string, str):
+        if isinstance(string, unicode) or isinstance(string, str):
             posPro = self.get_position_property_of_element_by_visible_text(string, PositionProperty._IN)
         elif isinstance(string, MyElement):
             rect = {'leftside': string.location.get('x'), 
