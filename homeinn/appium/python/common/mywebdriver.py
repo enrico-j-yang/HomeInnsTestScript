@@ -17,6 +17,15 @@ PATH = lambda p: os.path.abspath(
     os.path.join(os.path.dirname(__file__), p)
 )
 
+logging.basicConfig(level=logging.INFO,
+                format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
+                datefmt='%a, %d %b %Y %H:%M:%S',
+                filename='appium_python_client.log',
+                filemode='w')
+
+
+
+
 class UnknownStringException(Exception):
     def __init__(self, value=None):
         self.value = value
@@ -167,24 +176,24 @@ class WebDriver(webdriver.Remote):
             qualified_candidates = candidates
             for ref_pos in posprolist:
                 logging.debug("ref_pos.pos:%d", ref_pos.pos)
-                logging.debug("ref_pos.pos:%s", str(ref_pos.rect))
+                logging.info("ref_pos.pos:%s", str(ref_pos.rect))
                 rect_distance_dic = {}
                 candidates = qualified_candidates
-                logging.debug("candidates count %s", len(candidates))
+                logging.info("candidates count %s", len(candidates))
                 qualified_candidates = []
                 for element in candidates:
                     can_rect = {'leftside': element.location.get('x'), 
                                 'topside': element.location.get('y'),
                                 'rightside': element.location.get('x')+element.size['width'], 
                                 'bottomside': element.location.get('y')+element.size['height']}
-                    logging.debug("candidate %s rect: %s", element.text, str(can_rect))
+                    logging.info("candidate %s rect: %s", element.text, str(can_rect))
                     distance = self.calc_distance(ref_pos.rect, can_rect, ref_pos.pos)
-                    logging.debug("candidate %s distance:%s", element.text, str(distance))
+                    logging.info("candidate %s distance:%s", element.text, str(distance))
                     if distance != None:
                         rect_distance_dic[distance] = element
                         qualified_candidates.append(element)
-                        logging.debug("add element %s", element.text)
-                        logging.debug("rect_distance_dic %s", str(rect_distance_dic))
+                        logging.info("add element %s", element.text)
+                        logging.info("rect_distance_dic %s", str(rect_distance_dic))
 
             #assert len(rect_distance_dic)==len(qualified_candidates)
             
@@ -248,7 +257,7 @@ class WebDriver(webdriver.Remote):
                                 element = self.find_element_by_string("//*[contains(@name, '"+string+"')]")
                             except NoSuchElementException:
                                 raise NoSuchElementException
-
+                    
         rect = {'leftside': element.location.get('x'), 
                 'topside': element.location.get('y'),
                 'rightside': element.location.get('x')+element.size['width'], 
@@ -262,9 +271,9 @@ class WebDriver(webdriver.Remote):
         if isinstance(string, unicode) or isinstance(string, str):
             posPro = self.get_position_property_of_element_by_visible_text(string, PositionProperty._NEAR)
         elif isinstance(string, MyElement):
-            rect = {'leftside': string.location.get('x'), 
+            rect = {'leftside': string.location.get('x'),
                     'topside': string.location.get('y'),
-                    'rightside': string.location.get('x')+string.size['width'], 
+                    'rightside': string.location.get('x')+string.size['width'],
                     'bottomside': string.location.get('y')+string.size['height']}
             logging.info("rect:"+str(rect))
             posPro = PositionProperty(rect, PositionProperty._NEAR)
@@ -273,47 +282,47 @@ class WebDriver(webdriver.Remote):
             raise Exception
         posprolist = (posPro,);
         return posprolist
-            
+
     def _above(self, string):
         if isinstance(string, unicode) or isinstance(string, str):
             posPro = self.get_position_property_of_element_by_visible_text(string, PositionProperty._ABOVE)
         elif isinstance(string, MyElement):
-            rect = {'leftside': string.location.get('x'), 
+            rect = {'leftside': string.location.get('x'),
                     'topside': string.location.get('y'),
-                    'rightside': string.location.get('x')+string.size['width'], 
+                    'rightside': string.location.get('x')+string.size['width'],
                     'bottomside': string.location.get('y')+string.size['height']}
             logging.info("rect:"+str(rect))
             posPro = PositionProperty(rect, PositionProperty._ABOVE)
         else:
             logging.error("string class is: %s", string.__class__.__name__)
             raise Exception
-        
+
         posprolist = (posPro,);
         return posprolist
-        
+
     def _under(self, string):
         if isinstance(string, unicode) or isinstance(string, str):
             posPro = self.get_position_property_of_element_by_visible_text(string, PositionProperty._UNDER)
         elif isinstance(string, MyElement):
-            rect = {'leftside': string.location.get('x'), 
+            rect = {'leftside': string.location.get('x'),
                     'topside': string.location.get('y'),
-                    'rightside': string.location.get('x')+string.size['width'], 
+                    'rightside': string.location.get('x')+string.size['width'],
                     'bottomside': string.location.get('y')+string.size['height']}
-            logging.debug("rect:"+str(rect))
+            logging.info("rect:"+str(rect))
             posPro = PositionProperty(rect, PositionProperty._UNDER)
         else:
             logging.error("string class is: %s", string.__class__.__name__)
             raise Exception
         posprolist = (posPro,);
         return posprolist
-    
+
     def _left(self, string):
         if isinstance(string, unicode) or isinstance(string, str):
             posPro = self.get_position_property_of_element_by_visible_text(string, PositionProperty._LEFT)
         elif isinstance(string, MyElement):
-            rect = {'leftside': string.location.get('x'), 
+            rect = {'leftside': string.location.get('x'),
                     'topside': string.location.get('y'),
-                    'rightside': string.location.get('x')+string.size['width'], 
+                    'rightside': string.location.get('x')+string.size['width'],
                     'bottomside': string.location.get('y')+string.size['height']}
             logging.info("rect:"+str(rect))
             posPro = PositionProperty(rect, PositionProperty._LEFT)
@@ -322,30 +331,30 @@ class WebDriver(webdriver.Remote):
             raise Exception
         posprolist = (posPro,);
         return posprolist
-    
+
     def _right(self, string):
         if isinstance(string, unicode) or isinstance(string, str):
             posPro = self.get_position_property_of_element_by_visible_text(string, PositionProperty._RIGHT)
         elif isinstance(string, MyElement):
-            rect = {'leftside': string.location.get('x'), 
+            rect = {'leftside': string.location.get('x'),
                     'topside': string.location.get('y'),
-                    'rightside': string.location.get('x')+string.size['width'], 
+                    'rightside': string.location.get('x')+string.size['width'],
                     'bottomside': string.location.get('y')+string.size['height']}
-            logging.debug("rect:"+str(rect))
+            logging.info("rect:"+str(rect))
             posPro = PositionProperty(rect, PositionProperty._RIGHT)
         else:
             logging.error("string class is: %s", string.__class__.__name__)
             raise Exception
         posprolist = (posPro,);
         return posprolist
-    
+
     def _in(self, string):
         if isinstance(string, unicode) or isinstance(string, str):
             posPro = self.get_position_property_of_element_by_visible_text(string, PositionProperty._IN)
         elif isinstance(string, MyElement):
-            rect = {'leftside': string.location.get('x'), 
+            rect = {'leftside': string.location.get('x'),
                     'topside': string.location.get('y'),
-                    'rightside': string.location.get('x')+string.size['width'], 
+                    'rightside': string.location.get('x')+string.size['width'],
                     'bottomside': string.location.get('y')+string.size['height']}
             logging.info("rect:"+str(rect))
             posPro = PositionProperty(rect, PositionProperty._IN)
