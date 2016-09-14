@@ -62,8 +62,8 @@ def after_feature(context, feature):
 
 def before_scenario(context, scenario):
     context = context
-#context.testStep.driver.launch_app()
-
+    #context.testStep.driver.launch_app()
+    
 def after_scenario(context, scenario):
     #context = context
     screenshotname = "./" + scenario.name + ".png"
