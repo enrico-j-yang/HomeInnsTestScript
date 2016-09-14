@@ -17,6 +17,15 @@ PATH = lambda p: os.path.abspath(
     os.path.join(os.path.dirname(__file__), p)
 )
 
+logging.basicConfig(level=logging.INFO,
+                format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
+                datefmt='%a, %d %b %Y %H:%M:%S',
+                filename='appium_python_client.log',
+                filemode='w')
+
+
+
+
 class UnknownStringException(Exception):
     def __init__(self, value=None):
         self.value = value

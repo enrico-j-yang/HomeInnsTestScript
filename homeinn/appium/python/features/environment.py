@@ -51,7 +51,6 @@ def before_feature(context, feature):
     desired_caps['resetKeyboard'] = 'True'
     #desired_caps['udid'] = '022MWW1465012734'#Huawei P7
     #desired_caps['udid'] = '50da53b57d32'#Xiaomi Hongmi 2
-    #desired_caps['udid'] = '8627d0e6' #Yan's Oppo
 
     context.testStep.init_appium(desired_caps)
     context.touchAction = TouchAction(context.testStep.driver)
