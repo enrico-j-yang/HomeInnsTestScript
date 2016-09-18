@@ -301,6 +301,7 @@ def step_impl(context):
 
 @when(u'用户选择第一个酒店')
 def step_impl(context):
+    context.hotel = context.testStep.has_widget("com.ziipin.homeinn:id/text_hotel_name").text
     context.testStep.tap_widget("com.ziipin.homeinn:id/text_hotel_name")
 
 @then(u'掌上如家跳转到选房预订界面')
@@ -488,7 +489,11 @@ def step_impl(context, abandon_this_booking):
 def step_impl(context, abandon_booking):
     context.testStep.tap_widget("//android.widget.TextView[@text='"+abandon_booking+"']")  
 
-
-
-
+@when(u'用户选择“{hotel}”')
+def step_impl(context, hotel):
+    try:
+        hotel_widget = context.testStep.tap_widget("//com.ziipin.homeinn:id/text_hotel_name[@text='"+hotel+"']")
+    except NoSuchElementException:
+        hotel_widget = context.testStep.tap_widget("//com.ziipin.homeinn:id/text_hotel_name[contains(@text, '"+hotel[0:8]+"')]")
+    context.hotel = hotel
 

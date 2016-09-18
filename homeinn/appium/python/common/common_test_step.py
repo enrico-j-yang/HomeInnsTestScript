@@ -142,6 +142,10 @@ class CommonTestStep(unittest.TestCase):
         
         
     def _find_day_widget_by_nearby_date(self, listView, target_date, ref_option):
+        if self.platformName == 'Android':
+            primary_date_string = "//android.widget.CheckedTextView"
+            secondary_date_string = "//android.widget.TextView"
+
         if ref_option & _YESTERDAY == _YESTERDAY:
             yesterday_widget = listView.has_widget("//*[@text='"+str((target_date-datetime.timedelta(days=1)).day)+"']")
         elif ref_option & _TOMORROW == _TOMORROW:
@@ -155,76 +159,144 @@ class CommonTestStep(unittest.TestCase):
             raise UnknownReferenceOptionError
 
         if ref_option == _YESTERDAY | _TOMORROW | _LASTWEEK | _NEXTWEEK:
-            day_widget = listView.has_widget("//android.widget.CheckedTextView", 
-                                                self._above(str((target_date+datetime.timedelta(days=7)).day))+
-                                                self._under(str((target_date-datetime.timedelta(days=7)).day))+
-                                                self._right(str((target_date-datetime.timedelta(days=1)).day))+
-                                                self._left(str((target_date+datetime.timedelta(days=1)).day))+
-                                                self._under("六"))
-                                            
-        elif ref_option == _YESTERDAY | _TOMORROW | _LASTWEEK:
-            day_widget = listView.has_widget("//android.widget.CheckedTextView", 
-                                                self._under(str((target_date-datetime.timedelta(days=7)).day))+
-                                                self._right(str((target_date-datetime.timedelta(days=1)).day))+
-                                                self._left(str((target_date+datetime.timedelta(days=1)).day))+
-                                                self._under("六"))
-    
+            try:
+                day_widget = listView.has_widget(primary_date_string,
+                                                 self._above(str((target_date+datetime.timedelta(days=7)).day))+
+                                                 self._under(str((target_date-datetime.timedelta(days=7)).day))+
+                                                 self._right(str((target_date-datetime.timedelta(days=1)).day))+
+                                                 self._left(str((target_date+datetime.timedelta(days=1)).day))+
+                                                 self._under("六"))
+            except NoSuchElementException:
+                day_widget = listView.has_widget(secondary_date_string,
+                                                 self._above(str((target_date+datetime.timedelta(days=7)).day))+
+                                                 self._under(str((target_date-datetime.timedelta(days=7)).day))+
+                                                 self._right(str((target_date-datetime.timedelta(days=1)).day))+
+                                                 self._left(str((target_date+datetime.timedelta(days=1)).day))+
+                                                 self._under("六"))
+
+        elif  ref_option == _YESTERDAY | _TOMORROW | _LASTWEEK:
+            try:
+                day_widget = listView.has_widget(primary_date_string,
+                                                 self._under(str((target_date-datetime.timedelta(days=7)).day))+
+                                                 self._right(str((target_date-datetime.timedelta(days=1)).day))+
+                                                 self._left(str((target_date+datetime.timedelta(days=1)).day))+
+                                                 self._under("六"))
+            except NoSuchElementException:
+                day_widget = listView.has_widget(secondary_date_string,
+                                                 self._under(str((target_date-datetime.timedelta(days=7)).day))+
+                                                 self._right(str((target_date-datetime.timedelta(days=1)).day))+
+                                                 self._left(str((target_date+datetime.timedelta(days=1)).day))+
+                                                 self._under("六"))
+
         elif ref_option == _YESTERDAY | _TOMORROW | _NEXTWEEK:
-            day_widget = listView.has_widget("//android.widget.CheckedTextView", 
-                                                self._above(str((target_date+datetime.timedelta(days=7)).day))+
-                                                self._right(str((target_date-datetime.timedelta(days=1)).day))+
-                                                self._left(str((target_date+datetime.timedelta(days=1)).day))+
-                                                self._under("六"))
-        
+            try:
+                day_widget = listView.has_widget(primary_date_string,
+                                                 self._above(str((target_date+datetime.timedelta(days=7)).day))+
+                                                 self._right(str((target_date-datetime.timedelta(days=1)).day))+
+                                                 self._left(str((target_date+datetime.timedelta(days=1)).day))+
+                                                 self._under("六"))
+            except NoSuchElementException:
+                day_widget = listView.has_widget(secondary_date_string,
+                                                 self._above(str((target_date+datetime.timedelta(days=7)).day))+
+                                                 self._right(str((target_date-datetime.timedelta(days=1)).day))+
+                                                 self._left(str((target_date+datetime.timedelta(days=1)).day))+
+                                                 self._under("六"))
+
         elif ref_option == _TOMORROW | _LASTWEEK | _NEXTWEEK:
-            day_widget = listView.has_widget("//android.widget.CheckedTextView", 
-                                                self._left(str((target_date+datetime.timedelta(days=1)).day))+
-                                                self._above(str((target_date+datetime.timedelta(days=7)).day))+
-                                                self._under(str((target_date-datetime.timedelta(days=7)).day))+
-                                                self._under("六"))
+            try:
+                day_widget = listView.has_widget(primary_date_string,
+                                                 self._left(str((target_date+datetime.timedelta(days=1)).day))+
+                                                 self._above(str((target_date+datetime.timedelta(days=7)).day))+
+                                                 self._under(str((target_date-datetime.timedelta(days=7)).day))+
+                                                 self._under("六"))
+            except NoSuchElementException:
+                day_widget = listView.has_widget(secondary_date_string,
+                                                 self._left(str((target_date+datetime.timedelta(days=1)).day))+
+                                                 self._above(str((target_date+datetime.timedelta(days=7)).day))+
+                                                 self._under(str((target_date-datetime.timedelta(days=7)).day))+
+                                                 self._under("六"))
         
         elif ref_option == _YESTERDAY | _LASTWEEK | _NEXTWEEK:
-            day_widget = listView.has_widget("//android.widget.CheckedTextView", 
-                                                self._right(str((target_date-datetime.timedelta(days=1)).day))+
-                                                self._above(str((target_date+datetime.timedelta(days=7)).day))+
-                                                self._under(str((target_date-datetime.timedelta(days=7)).day))+
-                                                self._under("六"))
-        
+            try:
+                day_widget = listView.has_widget(primary_date_string,
+                                                 self._right(str((target_date-datetime.timedelta(days=1)).day))+
+                                                 self._above(str((target_date+datetime.timedelta(days=7)).day))+
+                                                 self._under(str((target_date-datetime.timedelta(days=7)).day))+
+                                                 self._under("六"))
+            except NoSuchElementException:
+                day_widget = listView.has_widget(secondary_date_string,
+                                                 self._right(str((target_date-datetime.timedelta(days=1)).day))+
+                                                 self._above(str((target_date+datetime.timedelta(days=7)).day))+
+                                                 self._under(str((target_date-datetime.timedelta(days=7)).day))+
+                                                 self._under("六"))
+
         elif ref_option == _YESTERDAY | _LASTWEEK:
-            day_widget = listView.has_widget("//android.widget.CheckedTextView", 
-                                                self._under(str((target_date-datetime.timedelta(days=7)).day))+
-                                                self._right(str((target_date-datetime.timedelta(days=1)).day))+
-                                                self._under("六"))
-        
+            try:
+                day_widget = listView.has_widget(primary_date_string,
+                                                 self._under(str((target_date-datetime.timedelta(days=7)).day))+
+                                                 self._right(str((target_date-datetime.timedelta(days=1)).day))+
+                                                 self._under("六"))
+            except NoSuchElementException:
+                day_widget = listView.has_widget(secondary_date_string,
+                                                 self._under(str((target_date-datetime.timedelta(days=7)).day))+
+                                                 self._right(str((target_date-datetime.timedelta(days=1)).day))+
+                                                 self._under("六"))
+
         elif ref_option == _YESTERDAY | _NEXTWEEK:
-            day_widget = listView.has_widget("//android.widget.CheckedTextView", 
-                                                self._above(str((target_date+datetime.timedelta(days=7)).day))+
-                                                self._right(str((target_date-datetime.timedelta(days=1)).day))+
-                                                self._under("六"))
+            try:
+                day_widget = listView.has_widget(primary_date_string,
+                                                 self._above(str((target_date+datetime.timedelta(days=7)).day))+
+                                                 self._right(str((target_date-datetime.timedelta(days=1)).day))+
+                                                 self._under("六"))
+            except NoSuchElementException:
+                day_widget = listView.has_widget(secondary_date_string,
+                                                 self._above(str((target_date+datetime.timedelta(days=7)).day))+
+                                                 self._right(str((target_date-datetime.timedelta(days=1)).day))+
+                                                 self._under("六"))
         
         elif ref_option == _TOMORROW | _LASTWEEK:
-            day_widget = listView.has_widget("//android.widget.CheckedTextView", 
-                                                self._under(str((target_date-datetime.timedelta(days=7)).day))+
-                                                self._left(str((target_date+datetime.timedelta(days=1)).day))+
-                                                self._under("六"))
-        
-        elif ref_option == _TOMORROW | _NEXTWEEK:
-            day_widget = listView.has_widget("//android.widget.CheckedTextView", 
-                                                self._above(str((target_date+datetime.timedelta(days=7)).day))+
-                                                self._left(str((target_date+datetime.timedelta(days=1)).day))+
-                                                self._under("六"))
-        
-        elif ref_option == _LASTWEEK:
-            day_widget = listView.has_widget("//android.widget.CheckedTextView", 
-                                                self._under(str((target_date-datetime.timedelta(days=7)).day))+
-                                                self._under("六"))
-                                            
-        elif ref_option == _NEXTWEEK:
-            day_widget = listView.has_widget("//android.widget.CheckedTextView", 
-                                                self._above(str((target_date+datetime.timedelta(days=7)).day))+
-                                                self._under("六"))
+            try:
+                day_widget = listView.has_widget(primary_date_string,
+                                                 self._under(str((target_date-datetime.timedelta(days=7)).day))+
+                                                 self._left(str((target_date+datetime.timedelta(days=1)).day))+
+                                                 self._under("六"))
+            except NoSuchElementException:
+                day_widget = listView.has_widget(secondary_date_string,
+                                                 self._under(str((target_date-datetime.timedelta(days=7)).day))+
+                                                 self._left(str((target_date+datetime.timedelta(days=1)).day))+
+                                                 self._under("六"))
 
-    
+        elif ref_option == _TOMORROW | _NEXTWEEK:
+            try:
+                day_widget = listView.has_widget(primary_date_string,
+                                                 self._above(str((target_date+datetime.timedelta(days=7)).day))+
+                                                 self._left(str((target_date+datetime.timedelta(days=1)).day))+
+                                                 self._under("六"))
+            except NoSuchElementException:
+                day_widget = listView.has_widget(secondary_date_string,
+                                                 self._above(str((target_date+datetime.timedelta(days=7)).day))+
+                                                 self._left(str((target_date+datetime.timedelta(days=1)).day))+
+                                                 self._under("六"))
+
+        elif ref_option == _LASTWEEK:
+            try:
+                day_widget = listView.has_widget(primary_date_string,
+                                                 self._under(str((target_date-datetime.timedelta(days=7)).day))+
+                                                 self._under("六"))
+            except NoSuchElementException:
+                day_widget = listView.has_widget(secondary_date_string,
+                                                 self._under(str((target_date-datetime.timedelta(days=7)).day))+
+                                                 self._under("六"))
+
+        elif ref_option == _NEXTWEEK:
+            try:
+                day_widget = listView.has_widget(primary_date_string,
+                                                 self._above(str((target_date+datetime.timedelta(days=7)).day))+
+                                                 self._under("六"))
+            except NoSuchElementException:
+                day_widget = listView.has_widget(secondary_date_string,
+                                                 self._above(str((target_date+datetime.timedelta(days=7)).day))+
+                                                 self._under("六"))
         return day_widget
     
     def _swipe_to_distination_half_by_half(self, start_element, end_element, distination_side="top2bottom", one_step=False):
