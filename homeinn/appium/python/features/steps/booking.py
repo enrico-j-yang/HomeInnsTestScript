@@ -393,7 +393,7 @@ def step_impl(context, widget_text):
 def step_impl(context, widget_text):
     context.testStep.wait_widget("//*[@text='"+widget_text+"']")
     
-@then(u'掌上如家跳转到地图选酒店界面')
+@then(u'掌上如家跳转到地图选择酒店界面')
 def step_impl(context):
     context.testStep.wait_widget("//*[contains(@text, '全部')]")
 
@@ -423,12 +423,12 @@ def step_impl(context):
         
 @then(u'掌上如家出现选择优惠券界面')
 def step_impl(context):
-    if (context.coupon):
+    if not (context.coupon == None):
         context.testStep.wait_widget("//*[@text='选择优惠券']")
 
 @then(u'掌上如家出现自助服务界面')
 def step_impl(context):
-    if (context.select_room):
+    if not (context.select_room == None):
         context.testStep.wait_widget("//*[@text='自助服务']")
             
 @then(u'掌上如家有“{district}”、“{circle}”和“{subway}”三个页面')
@@ -437,8 +437,8 @@ def step_impl(context, district, circle, subway):
     context.testStep.wait_widget("//*[@text='"+circle+"']")
     context.testStep.wait_widget("//*[@text='"+subway+"']")
 
-@then(u'掌上如家{verb}选择酒店界面')
-def step_impl(context, verb):
+@then(u'掌上如家跳转到选择酒店界面')
+def step_impl(context):
     context.testStep.wait_widget("//*[contains(@text, '排序')]")
     context.testStep.wait_widget("//*[contains(@text, '品牌')]")
     context.testStep.wait_widget("//*[contains(@text, '筛选')]")
