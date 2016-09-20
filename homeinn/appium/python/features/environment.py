@@ -62,6 +62,8 @@ def after_feature(context, feature):
 
 def before_scenario(context, scenario):
     context = context
+    
+    #context.testStep.take_screen_shot_at_every_step(scenario.name.encode('utf8'))
     #context.testStep.driver.launch_app()
     
 def after_scenario(context, scenario):

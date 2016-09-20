@@ -541,10 +541,14 @@ class CommonTestStep(unittest.TestCase):
                  
         self.touchAction.press(destination_day).release().perform()
     
-    def init_appium(self, desired_caps, server_port=4723, case_function_name=None):
+    def take_screen_shot_at_every_step(self, case_function_name):
         self.case_function_name = case_function_name
         if case_function_name != None:
+            os.popen("rm -rf "+self.case_function_name)
             os.popen("mkdir "+self.case_function_name)
+        
+    def init_appium(self, desired_caps, server_port=4723, case_function_name=None):
+        self.take_screen_shot_at_every_step(case_function_name)
             
         self.platformName = desired_caps['platformName']
         self.driver = WebDriver('http://localhost:'+str(server_port)+'/wd/hub', desired_caps)

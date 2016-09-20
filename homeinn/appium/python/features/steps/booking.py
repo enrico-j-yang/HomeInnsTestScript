@@ -128,42 +128,8 @@ def step_impl(context):
     assert ('.activity.MainActivity' == context.testStep.current_window())
     context.testStep.tap_permision_widget("accept")
     
-@then(u'掌上如家出现“{widget_text}”页面')
-def step_impl(context, widget_text):
-    context.testStep.wait_widget("//*[@text='"+widget_text+"']")
     
-@then(u'掌上如家出现“{widget_text}”界面')
-def step_impl(context, widget_text):
-    context.testStep.wait_widget("//*[@text='"+widget_text+"']")
-
-@then(u'页面有“{widget_text}”提示')
-def step_impl(context, widget_text):
-    context.testStep.wait_widget("//*[@text='"+widget_text+"']")
-
-@then(u'页面有“{widget_text}”按键')
-def step_impl(context, widget_text):
-    context.testStep.wait_widget("//*[@text='"+widget_text+"']")
-
-@then(u'掌上如家跳转到“{widget_text}”页面')
-def step_impl(context, widget_text):
-    context.testStep.wait_widget("//*[@text='"+widget_text+"']")
-    
-@when(u'用户点击城市')
-def step_impl(context):
-    context.testStep.tap_widget("com.ziipin.homeinn:id/city_layout")
-    
-@when(u'用户点击“入住”日期')
-def step_impl(context):
-    context.testStep.tap_widget("com.ziipin.homeinn:id/date_layout")
-
-@when(u'用户点击“{widget_text}”')
-def step_impl(context, widget_text):
-    context.testStep.tap_widget("//*[@text='"+widget_text+"']")
-
-@when(u'用户点击“{widget_text}”页面')
-def step_impl(context, widget_text):
-    context.testStep.tap_widget("//*[@text='"+widget_text+"']")
-
+#############################################################################
 @given(u'“{current_pos}”为“{widget_text}”')
 def step_impl(context, current_pos, widget_text):
     element = context.testStep.has_widget("//*[@text='"+widget_text+"']", context.testStep._under(current_pos)+context.testStep._above("最近选择"))
@@ -173,7 +139,8 @@ def step_impl(context, current_pos, widget_text):
 @when(u'用户点击以上的“{widget_text}”')
 def step_impl(context, widget_text):
     context.testStep.touchAction.press(context.element).release().perform()
-    #assert False
+    
+
     
 @then(u'城市显示为“{widget_text}”')
 def step_impl(context, widget_text):
@@ -188,45 +155,28 @@ def step_impl(context, hour):
     else:
         assert False
 
-
-@then(u'掌上如家有“{district}”、“{circle}”和“{subway}”三个页面')
-def step_impl(context, district, circle, subway):
-    context.testStep.wait_widget("//*[@text='"+district+"']")
-    context.testStep.wait_widget("//*[@text='"+circle+"']")
-    context.testStep.wait_widget("//*[@text='"+subway+"']")
-
-@then(u'“行政区”页面内有')
-def step_impl(context):
-    for row in context.table:
-        logging.debug(row['district'])
-        context.testStep.wait_widget("//*[@text='"+row['district']+"']")
-    
-@then(u'“商圈”页面内有')
-def step_impl(context):
-    for row in context.table:
-        logging.debug(row['area'])
-        context.testStep.wait_widget("//*[@text='"+row['area']+"']")
-
-@then(u'“地铁”页面内有')
-def step_impl(context):
-    for row in context.table:
-        logging.debug(row['subway'])
-        context.testStep.wait_widget("//*[@text='"+row['subway']+"']")
-        
 @then(u'“{roomtype}”页面有“{keyword}”条件')
 def step_impl(context, roomtype, keyword):
     context.testStep.wait_widget("//*[@text='"+roomtype+"']")
     context.testStep.wait_widget("//*[@text='"+keyword+"']")
 
-@then(u'掌上如家跳转到“{widget_text}”界面')
-def step_impl(context, widget_text):
+@then(u'掌上如家跳转到选择入住时间界面')
+def step_impl(context):
     today = datetime.date.today()
-    context.testStep.wait_widget("//*[contains(@text, '"+widget_text+"')]")
+    context.testStep.wait_widget("//*[contains(@text, '选择入住时间')]")
     context.testStep.wait_widget("//*[contains(@text, '离店')]")
     logging.debug("//*[contains(@text, '"+str(today.year)+"年"+str(today.month)+"月')]")
     
     context.testStep.wait_widget("//*[contains(@text, '"+str(today.year)+"年"+str(today.month)+"月')]")
 
+@then(u'掌上如家出现选择入住时间界面')
+def step_impl(context):
+    today = datetime.date.today()
+    context.testStep.wait_widget("//*[contains(@text, '选择入住时间')]")
+    context.testStep.wait_widget("//*[contains(@text, '离店')]")
+    logging.debug("//*[contains(@text, '"+str(today.year)+"年"+str(today.month)+"月')]")
+    
+    context.testStep.wait_widget("//*[contains(@text, '"+str(today.year)+"年"+str(today.month)+"月')]")
     
 @when(u'用户点击入住日期为“{checkin}”')
 def step_impl(context, checkin):
@@ -256,49 +206,6 @@ def step_impl(context, checkin, checkout):
     date_layout.find_element_by_string("//*[@text='"+str(context.check_in_date.day)+"']")
     date_layout.find_element_by_string("//*[@text='"+str(context.check_out_date.day)+"']")
     
-@then(u'“品牌”界面内有')
-def step_impl(context):
-    for row in context.table:
-        logging.debug(row['brandselection'])
-        context.testStep.wait_widget("//*[contains(@text, '"+row['brandselection']+"')]")
-
-@then(u'掌上如家跳转到选择酒店界面')
-def step_impl(context):
-    context.testStep.wait_widget("//*[contains(@text, '排序')]")
-    context.testStep.wait_widget("//*[contains(@text, '品牌')]")
-    context.testStep.wait_widget("//*[contains(@text, '筛选')]")
-    context.testStep.wait_widget("//*[contains(@text, '查看地图')]")
-
-@then(u'“品牌”页面内有')
-def step_impl(context):
-    for row in context.table:
-        logging.debug(row['brand'])
-        context.testStep.wait_widget("//*[contains(@text, '"+row['brand']+"')]")
-
-@then(u'“筛选”页面内有')
-def step_impl(context):
-    for row in context.table:
-        logging.debug(row['filter'])
-        context.testStep.wait_widget("//*[contains(@text, '"+row['filter']+"')]")
-
-@then(u'“排序”页面内有')
-def step_impl(context):
-    for row in context.table:
-        logging.debug(row['sort'])
-        context.testStep.wait_widget("//*[contains(@text, '"+row['sort']+"')]")
-
-@when(u'用户点击”查看地图“')
-def step_impl(context):
-    context.testStep.tap_widget("com.ziipin.homeinn:id/right_btn")
-
-@then(u'选择酒店界面跳转到地图选房界面')
-def step_impl(context):
-    context.testStep.wait_widget("//*[contains(@text, '全部')]")
-
-@when(u'用户返回选择酒店')
-def step_impl(context):
-    context.testStep.tap_widget("com.ziipin.homeinn:id/back_btn")
-
 @when(u'用户选择第一个酒店')
 def step_impl(context):
     context.hotel = context.testStep.has_widget("com.ziipin.homeinn:id/text_hotel_name").text
@@ -313,75 +220,6 @@ def step_impl(context):
     context.testStep.wait_widget("//*[@text='详情']")
     context.testStep.wait_widget("//*[@text='预订']")
 
-@when(u'用户点击”详情“')
-def step_impl(context):
-    context.testStep.tap_widget("com.ziipin.homeinn:id/room_detail_tag")
-
-@when(u'用户点击”返回“')
-def step_impl(context):
-    context.testStep.tap_widget("com.ziipin.homeinn:id/back_btn")
-
-@when(u'用户点击收藏')
-def step_impl(context):
-    context.testStep.tap_widget("com.ziipin.homeinn:id/favorite_btn")
-
-@when(u'用户点击酒店详情')
-def step_impl(context):
-    context.testStep.tap_widget("com.ziipin.homeinn:id/detail_info_layout")
-
-@then(u'选房预订界面跳转到”酒店详情“界面')
-def step_impl(context):
-    context.testStep.wait_widget("//*[contains(@text, '酒店详情')]")
-
-@when(u'用户点击分享酒店')
-def step_impl(context):
-    context.testStep.tap_widget("com.ziipin.homeinn:id/share_btn")
-
-@then(u'”酒店详情“界面出现”分享酒店“界面')
-def step_impl(context):
-    context.testStep.wait_widget("//*[contains(@text, '分享酒店')]")
-
-@when(u'用户点击”完成“')
-def step_impl(context):
-    context.testStep.tap_widget("com.ziipin.homeinn:id/btn_done")
-
-@when(u'用户返回选择酒店界面')
-def step_impl(context):
-    context.testStep.tap_widget("com.ziipin.homeinn:id/back_btn")
-
-@when(u'用户点击酒店地址')
-def step_impl(context):
-    context.testStep.tap_widget("com.ziipin.homeinn:id/hotel_address_text")
-
-@then(u'选房预订界面跳转到导航界面')
-def step_impl(context):
-    context.testStep.wait_widget("//*[contains(@text, '导航')]")
-
-@when(u'用户返回到选房预订界面')
-def step_impl(context):
-    context.testStep.tap_widget("com.ziipin.homeinn:id/back_btn")
-
-@when(u'用户点击电话按钮')
-def step_impl(context):
-    context.testStep.tap_widget("com.ziipin.homeinn:id/tell_btn")
-
-@when(u'用户返回选房预订界面')
-def step_impl(context):
-    context.testStep.tap_widget("com.ziipin.homeinn:id/back_btn")
-
-@when(u'用户点击入店和离店时间')
-def step_impl(context):
-    context.testStep.tap_widget("com.ziipin.homeinn:id/detail_date")
-
-@then(u'选房预订界面出现“选择入住时间”界面')
-def step_impl(context):
-    context.testStep.wait_widget("//*[contains(@text, '完成')]")
-    context.testStep.wait_widget("//*[contains(@text, '入住')]")
-    context.testStep.wait_widget("//*[contains(@text, '离店')]")
-
-@when(u'用户点击“完成”按钮')
-def step_impl(context):
-    context.testStep.tap_widget("com.ziipin.homeinn:id/btn_done")
 
 @when(u'用户上划屏幕查看房型直到酒店房型有“{room_type}”')
 def step_impl(context, room_type):
@@ -439,10 +277,6 @@ def step_impl(context, hotel):
         hotel_widget = context.testStep.has_widget("//android.widget.TextView[contains(@text, '"+hotel[0:9]+"')]")
     context.hotel = hotel
 
-@when(u'用户点击搜索列表中“{hotel}”')
-def step_impl(context, hotel):
-    context.testStep.tap_widget("//android.widget.TextView[@text='"+hotel+"']")
-
 
 @then(u'“{room_type}”上划到屏幕最顶')
 def step_impl(context, room_type):
@@ -477,18 +311,6 @@ def step_impl(context, room_type, member_price):
 def step_impl(context, member_price, booking):
     context.testStep.touchAction.press(context.booking_widget).release().perform()
 
-@when(u'用户点击左上角返回按钮')
-def step_impl(context):
-    context.testStep.tap_widget("com.ziipin.homeinn:id/back_btn")  
-
-@then(u'掌上如家提示”{abandon_this_booking}“')
-def step_impl(context, abandon_this_booking):
-    context.testStep.has_widget("//android.widget.TextView[contains(@text, '"+abandon_this_booking+"')]")
-
-@when(u'用户点击”{abandon_booking}“')
-def step_impl(context, abandon_booking):
-    context.testStep.tap_widget("//android.widget.TextView[@text='"+abandon_booking+"']")  
-
 @when(u'用户选择“{hotel}”')
 def step_impl(context, hotel):
     try:
@@ -497,3 +319,388 @@ def step_impl(context, hotel):
         hotel_widget = context.testStep.tap_widget("//com.ziipin.homeinn:id/text_hotel_name[contains(@text, '"+hotel[0:8]+"')]")
     context.hotel = hotel
 
+#@then(u'检查酒店显示是否正确')
+#def step_impl(context):
+    #hotel_element = context.testStep.find_element_by_id("com.ziipin.homeinn:id/order_hotel_name")
+    #hotel_name = hotel_element.getText()
+    #if :
+        
+
+@then(u'填写订单页面向下滑动')
+def step_imp(context):
+    start_p = context.testStep.has_widget("//android.widget.TextView[@text='信用住，先住后付']")
+    end_p = context.testStep.has_widget("com.ziipin.homeinn:id/order_hotel_name")
+    context.testStep._swipe_to_distination_half_by_half(start_p, end_p)
+
+#@then(u'检查酒店')
+#def step_imp(context):
+    #org_text = '如家-广州琶洲会展中心琶洲地铁站店'
+    #element_text = context.testStep.has_widget("com.ziipin.homeinn:id/order_hotel_name").text
+    #count = 2
+    #if count > 1 :
+        #print element_text
+    #else :
+        #logging.error("string is wrong")
+    
+
+
+@when(u'用户上划屏幕查看订单详情直到有“取消订单”')
+def step_impl(context):
+    start_p = context.testStep.has_widget("com.ziipin.homeinn:id/order_contact_text")
+    logging.debug(start_p.text)
+    
+    end_p = context.testStep.has_widget("com.ziipin.homeinn:id/order_hotel_name")
+    logging.debug(end_p)
+    context.testStep._swipe_to_distination_half_by_half(start_p, end_p)
+    context.testStep.has_widget("//*[@text='取消订单']")
+    
+
+@given(u'有“{widget_text}”的订单')
+def step_impl(context, widget_text):
+    hotel_widget = context.testStep.has_widget("//*[@text='"+widget_text+"']")
+    context.hotel_widget = hotel_widget
+
+@when(u'用户点击以上订单')
+def step_impl(context):
+    try:
+        try:
+            hotel_widget = context.testStep.tap_widget("//*[@text='"+context.hotel+"']")
+        except NoSuchElementException:
+            hotel_widget = context.testStep.tap_widget("//*[contains(@text, '"+context.hotel[0:8]+"')]")
+    
+        context.hotel_widget = hotel_widget
+    except:
+        logging.info("no hotel recorded")
+    
+    context.testStep.touchAction.press(context.hotel_widget).release().perform()
+    
+
+    
+######################wait_widget############################################
+@then(u'掌上如家{verb}“{widget_text}”页面')
+def step_impl(context, verb, widget_text):
+    context.testStep.wait_widget("//*[@text='"+widget_text+"']")
+    
+@then(u'掌上如家{verb}“{widget_text}”界面')
+def step_impl(context, verb, widget_text):
+    context.testStep.wait_widget("//*[@text='"+widget_text+"']")
+
+@then(u'页面有“{widget_text}”提示')
+def step_impl(context, widget_text):
+    context.testStep.wait_widget("//*[@text='"+widget_text+"']")
+
+@then(u'页面有“{widget_text}”按键')
+def step_impl(context, widget_text):
+    context.testStep.wait_widget("//*[@text='"+widget_text+"']")
+    
+@then(u'掌上如家跳转到地图选酒店界面')
+def step_impl(context):
+    context.testStep.wait_widget("//*[contains(@text, '全部')]")
+
+@then(u'“酒店详情”界面出现“{widget_text}”页面')
+def step_impl(context, widget_text):
+    context.testStep.wait_widget("//*[@text='"+widget_text+"']")
+    
+@then(u'掌上如家提示“{widget_text}”')
+def step_impl(context, widget_text):
+    context.testStep.wait_widget("//*[@text='"+widget_text+"']")
+
+@given(u'用户有可用电子券')
+def step_impl(context):
+    try:
+        context.coupon = context.testStep.has_widget("//*[@text='您有可用电子券']")
+    except NoSuchElementException:
+        context.coupon = None
+        logging.info("no coupon available")
+
+@given(u'有“去选房”')
+def step_impl(context):
+    try:
+        context.select_room = context.testStep.has_widget("//*[@text='去选房']")
+    except NoSuchElementException:
+        context.select_room = None
+        logging.info("can not choose room")
+        
+@then(u'掌上如家出现选择优惠券界面')
+def step_impl(context):
+    if (context.coupon):
+        context.testStep.wait_widget("//*[@text='选择优惠券']")
+
+@then(u'掌上如家出现自助服务界面')
+def step_impl(context):
+    if (context.select_room):
+        context.testStep.wait_widget("//*[@text='自助服务']")
+            
+@then(u'掌上如家有“{district}”、“{circle}”和“{subway}”三个页面')
+def step_impl(context, district, circle, subway):
+    context.testStep.wait_widget("//*[@text='"+district+"']")
+    context.testStep.wait_widget("//*[@text='"+circle+"']")
+    context.testStep.wait_widget("//*[@text='"+subway+"']")
+
+@then(u'掌上如家{verb}选择酒店界面')
+def step_impl(context, verb):
+    context.testStep.wait_widget("//*[contains(@text, '排序')]")
+    context.testStep.wait_widget("//*[contains(@text, '品牌')]")
+    context.testStep.wait_widget("//*[contains(@text, '筛选')]")
+    context.testStep.wait_widget("//*[contains(@text, '查看地图')]")
+
+
+@then(u'掌上如家{verb}我的界面')
+def step_impl(context, verb):
+    context.testStep.wait_widget("//*[contains(@text, '我的钱包')]")
+    context.testStep.wait_widget("//*[contains(@text, '我的券包')]")
+    context.testStep.wait_widget("//*[contains(@text, '我的订单')]")
+    
+@then(u'选房预订界面出现“选择入住时间”界面')
+def step_impl(context):
+    context.testStep.wait_widget("//*[contains(@text, '完成')]")
+    context.testStep.wait_widget("//*[contains(@text, '入住')]")
+    context.testStep.wait_widget("//*[contains(@text, '离店')]")
+    
+@then(u'“品牌”界面内有')
+def step_impl(context):
+    for row in context.table:
+        logging.debug(row['brand'])
+        context.testStep.wait_widget("//*[contains(@text, '"+row['brand']+"')]")
+
+
+@then(u'“品牌”页面内有')
+def step_impl(context):
+    for row in context.table:
+        logging.debug(row['brand'])
+        #context.testStep.wait_widget("//*[@text='"+row['brand']+"']")
+        context.testStep.wait_widget("//*[contains(@text, '"+row['brand']+"')]")
+
+
+@then(u'“筛选”页面内有')
+def step_impl(context):
+    for row in context.table:
+        logging.debug(row['filter'])
+        context.testStep.wait_widget("//*[contains(@text, '"+row['filter']+"')]")
+
+@then(u'“排序”页面内有')
+def step_impl(context):
+    for row in context.table:
+        logging.debug(row['sort'])
+        context.testStep.wait_widget("//*[contains(@text, '"+row['sort']+"')]")
+
+@then(u'“行政区”页面内有')
+def step_impl(context):
+    for row in context.table:
+        logging.debug(row['district'])
+        context.testStep.wait_widget("//*[@text='"+row['district']+"']")
+    
+@then(u'“商圈”页面内有')
+def step_impl(context):
+    for row in context.table:
+        logging.debug(row['area'])
+        context.testStep.wait_widget("//*[@text='"+row['area']+"']")
+
+@then(u'“地铁”页面内有')
+def step_impl(context):
+    for row in context.table:
+        logging.debug(row['subway'])
+        context.testStep.wait_widget("//*[@text='"+row['subway']+"']")
+
+@then(u'“选择出行目的”页面内有')
+def step_impl(context):
+    for row in context.table:
+        logging.debug(row['target'])
+        context.testStep.wait_widget("//*[contains(@text, '"+row['target']+"')]")
+        
+@then(u'“分享酒店”页面内有')
+def step_impl(context):
+    for row in context.table:
+        logging.debug(row['share'])
+        context.testStep.wait_widget("//*[contains(@text, '"+row['share']+"')]")
+        
+########################tap_widget#####################################
+@when(u'用户点击城市')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/city_layout")
+    
+@when(u'用户点击“入住”日期')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/date_layout")
+
+@when(u'用户点击“{widget_text}”')
+def step_impl(context, widget_text):
+    context.testStep.tap_widget("//*[@text='"+widget_text+"']")
+
+@when(u'用户点击“{widget_text}”页面')
+def step_impl(context, widget_text):
+    context.testStep.tap_widget("//*[@text='"+widget_text+"']")
+
+@when(u'用户点击“{widget_text}”按键')
+def step_impl(context, widget_text):
+    context.testStep.tap_widget("//*[@text='"+widget_text+"']")
+
+@when(u'用户点击“{widget_text}”按钮')
+def step_impl(context, widget_text):
+    context.testStep.tap_widget("//*[@text='"+widget_text+"']")
+    
+@when(u'用户点击城市列表中的“{widget_text}”')
+def step_impl(context, widget_text):
+    context.testStep.tap_widget("//*[@text='"+widget_text+"']")
+
+
+@when(u'用户点击定位城市')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/top_title")
+
+@when(u'用户点击左上角返回按钮')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/back_btn")  
+
+@when(u'用户点击当前位置')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/type_layout")
+
+@when(u'用户点击收藏')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/favorite_btn")
+
+@when(u'用户点击酒店详情')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/detail_info_layout")
+
+@when(u'用户点击分享酒店')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/share_btn")
+
+@when(u'用户点击酒店地址')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/hotel_address_text")
+
+@when(u'用户点击电话按钮')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/tell_btn")
+
+@when(u'用户点击入店和离店时间')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/detail_date")
+
+@when(u'用户点击搜索列表中“{hotel}”')
+def step_impl(context, hotel):
+    context.testStep.tap_widget("//android.widget.TextView[@text='"+hotel+"']")
+    
+@when(u'用户点击电子券')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/coupon_price")
+
+@when(u'用户点击积分加速计划说明')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/speed_desp_btn")
+
+@when(u'用户点击积分加速计划')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/speed_checker")
+
+@when(u'用户点击出行目的')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/commit_aim_layout")
+
+@when(u'用户点击发票')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/invoice_input")
+
+@when(u'用户点击订单详情')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/right_btn")
+
+@when(u'用户点击电话')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/tell_btn")
+    #com.ziipin.homeinn:id/order_taxi_btn
+    #com.ziipin.homeinn:id/order_service_btn
+    #com.ziipin.homeinn:id/cancel_btn
+
+@when(u'用户点击支付宝支付')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/type_tab_ali")
+
+@when(u'用户点击微信支付')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/type_tab_wechat")
+
+@when(u'用户点击如家钱包支付')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/type_tab_wallet")
+
+@when(u'用户点击银行卡支付')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/type_tab_union")
+
+@when(u'用户点击立即支付')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/order_pay_btn")
+
+@when(u'用户点击拨打电话')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/tell_btn")
+
+@when(u'用户点击第一个酒店')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/text_hotel_name")
+
+@when(u'用户点击添加酒店天数')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/num_add_btn")
+
+@when(u'用户点击减少酒店天数')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/num_dec_btn")
+
+@when(u'用户点击联系人')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/contact_name")
+
+@when(u'用户点击商城券说明')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/product_desp_btn")    
+
+@when(u'用户点击添加商城券')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/add_btn")  
+
+@when(u'用户点击减少商城券')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/dec_btn")  
+
+@when(u'用户点击信用住说明')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/credit_desp_btn")
+
+@when(u'用户点击信用住')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/credit_checker")
+
+@when(u'用户点击图片')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/detail_photo")
+
+@when(u'用户点击关闭')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/close_btn")
+
+@when(u'用户点击增值服务')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/detail_service_layout")
+
+@when(u'用户点击地址')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/detail_address_layout")
+
+@when(u'用户点击分享')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/share_btn") 
+    
+@when(u'用户点击确认选择')
+def step_impl(context):
+    if not (context.coupon == None):
+        context.testStep.tap_widget("//*[@text='确认选择']")
+
+@when(u'用户点击去选房')
+def step_impl(context):
+    if not (context.select_room == None):
+        context.testStep.tap_widget("//*[@text='去选房']")
