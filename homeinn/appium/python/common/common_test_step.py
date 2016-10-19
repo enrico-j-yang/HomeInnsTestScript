@@ -83,6 +83,8 @@ _NEXTWEEK = 0b1000
         
 
 class CommonTestStep(unittest.TestCase):
+    wait_duration = 30
+    
     def __init__(self):
         self.step = 0
         self.tap_duration = 200
@@ -556,9 +558,9 @@ class CommonTestStep(unittest.TestCase):
         try:
             self.touchAction = TouchAction(self.driver)
 
-            self.wait = WebDriverWait(self.driver, 10, 1)
+            self.wait = WebDriverWait(self.driver, CommonTestStep.wait_duration, 1)
         
-            if self.platformName == 'Android':    
+            if self.platformName == 'Android':
                 self.ime = self.driver.active_ime_engine
                 logging.debug("self.ime is %s", self.ime)
                 if self.ime == u"io.appium.android.ime/.UnicodeIME":
@@ -607,7 +609,7 @@ class CommonTestStep(unittest.TestCase):
         return self.driver._in(string)
             
     @test_step_info
-    def wait_window(self, window, timeout=10, interval=1):
+    def wait_window(self, window, timeout=wait_duration, interval=1):
         if self.platformName == 'Android':
             return self.driver.wait_activity(window, timeout, interval)
         elif self.platformName == 'iOS':
@@ -620,7 +622,7 @@ class CommonTestStep(unittest.TestCase):
     # function wait for act activity and check it show up or not within duration specified by parameter timeout
     # checking interval is specified by parameter interval 
     @test_step_info
-    def wait_and_check_window_show_up(self, window, timeout=10, interval=1):
+    def wait_and_check_window_show_up(self, window, timeout=wait_duration, interval=1):
         if self.platformName == 'Android':
             if self.driver.wait_activity(window, timeout, interval):
                logging.debug("*****"+window+" OK*****") 
@@ -640,7 +642,7 @@ class CommonTestStep(unittest.TestCase):
         return self.driver.has_widget(string, posprolist)
         
     @test_step_info
-    def wait_widget(self, string, timeout=10, interval=1): 
+    def wait_widget(self, string, timeout=wait_duration, interval=1): 
         wait = WebDriverWait(self.driver, timeout, interval)
         wait.until(lambda dr: dr.find_element_by_string(string).is_displayed())
 
@@ -669,7 +671,7 @@ class CommonTestStep(unittest.TestCase):
             
         textbox.clear()
 
-        self.touchAction.press(textbox, self.tap_duration).release().perform()    
+        #self.touchAction.press(textbox, self.tap_duration).release().perform()    
         textbox.send_keys(text)
     
     @test_step_info    
@@ -729,6 +731,11 @@ class CommonTestStep(unittest.TestCase):
     def tap_widget(self, string):
         widget = self.driver.find_element_by_string(string)
         self.touchAction.press(widget, self.tap_duration).release().perform()
+        
+    @test_step_info
+    def click_widget(self, string):
+        widget = self.driver.find_element_by_string(string)
+        widget.click()
         
     @test_step_info
     def tap_permision_widget(self, choice="accept"):

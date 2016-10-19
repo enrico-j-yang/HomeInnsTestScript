@@ -379,19 +379,19 @@ def step_impl(context):
 ######################wait_widget############################################
 @then(u'掌上如家{verb}“{widget_text}”页面')
 def step_impl(context, verb, widget_text):
-    context.testStep.wait_widget("//*[@text='"+widget_text+"']")
+    context.testStep.wait_widget(widget_text)
     
 @then(u'掌上如家{verb}“{widget_text}”界面')
 def step_impl(context, verb, widget_text):
-    context.testStep.wait_widget("//*[@text='"+widget_text+"']")
+    context.testStep.wait_widget(widget_text)
 
 @then(u'页面有“{widget_text}”提示')
 def step_impl(context, widget_text):
-    context.testStep.wait_widget("//*[@text='"+widget_text+"']")
+    context.testStep.wait_widget(widget_text)
 
 @then(u'页面有“{widget_text}”按键')
 def step_impl(context, widget_text):
-    context.testStep.wait_widget("//*[@text='"+widget_text+"']")
+    context.testStep.wait_widget(widget_text)
     
 @then(u'掌上如家跳转到地图选择酒店界面')
 def step_impl(context):
@@ -399,11 +399,11 @@ def step_impl(context):
 
 @then(u'“酒店详情”界面出现“{widget_text}”页面')
 def step_impl(context, widget_text):
-    context.testStep.wait_widget("//*[@text='"+widget_text+"']")
+    context.testStep.wait_widget(widget_text)
     
 @then(u'掌上如家提示“{widget_text}”')
 def step_impl(context, widget_text):
-    context.testStep.wait_widget("//*[@text='"+widget_text+"']")
+    context.testStep.wait_widget(widget_text)
 
 @given(u'用户有可用电子券')
 def step_impl(context):
@@ -433,35 +433,35 @@ def step_impl(context):
             
 @then(u'掌上如家有“{district}”、“{circle}”和“{subway}”三个页面')
 def step_impl(context, district, circle, subway):
-    context.testStep.wait_widget("//*[@text='"+district+"']")
-    context.testStep.wait_widget("//*[@text='"+circle+"']")
-    context.testStep.wait_widget("//*[@text='"+subway+"']")
+    context.testStep.wait_widget(district)
+    context.testStep.wait_widget(circle)
+    context.testStep.wait_widget(subway)
 
 @then(u'掌上如家跳转到选择酒店界面')
 def step_impl(context):
-    context.testStep.wait_widget("//*[contains(@text, '排序')]")
-    context.testStep.wait_widget("//*[contains(@text, '品牌')]")
-    context.testStep.wait_widget("//*[contains(@text, '筛选')]")
-    context.testStep.wait_widget("//*[contains(@text, '查看地图')]")
+    context.testStep.wait_widget('排序')
+    context.testStep.wait_widget('品牌')
+    context.testStep.wait_widget('筛选')
+    context.testStep.wait_widget('查看地图')
 
 
 @then(u'掌上如家{verb}我的界面')
 def step_impl(context, verb):
-    context.testStep.wait_widget("//*[contains(@text, '我的钱包')]")
-    context.testStep.wait_widget("//*[contains(@text, '我的券包')]")
-    context.testStep.wait_widget("//*[contains(@text, '我的订单')]")
+    context.testStep.wait_widget('我的钱包')
+    context.testStep.wait_widget('我的券包')
+    context.testStep.wait_widget('我的订单')
     
 @then(u'选房预订界面出现“选择入住时间”界面')
 def step_impl(context):
-    context.testStep.wait_widget("//*[contains(@text, '完成')]")
-    context.testStep.wait_widget("//*[contains(@text, '入住')]")
-    context.testStep.wait_widget("//*[contains(@text, '离店')]")
+    context.testStep.wait_widget('完成')
+    context.testStep.wait_widget('入住')
+    context.testStep.wait_widget('离店')
     
 @then(u'“品牌”界面内有')
 def step_impl(context):
     for row in context.table:
         logging.debug(row['brand'])
-        context.testStep.wait_widget("//*[contains(@text, '"+row['brand']+"')]")
+        context.testStep.wait_widget(row['brand'])
 
 
 @then(u'“品牌”页面内有')
@@ -469,50 +469,50 @@ def step_impl(context):
     for row in context.table:
         logging.debug(row['brand'])
         #context.testStep.wait_widget("//*[@text='"+row['brand']+"']")
-        context.testStep.wait_widget("//*[contains(@text, '"+row['brand']+"')]")
+        context.testStep.wait_widget(row['brand'])
 
 
 @then(u'“筛选”页面内有')
 def step_impl(context):
     for row in context.table:
         logging.debug(row['filter'])
-        context.testStep.wait_widget("//*[contains(@text, '"+row['filter']+"')]")
+        context.testStep.wait_widget(row['filter'])
 
 @then(u'“排序”页面内有')
 def step_impl(context):
     for row in context.table:
         logging.debug(row['sort'])
-        context.testStep.wait_widget("//*[contains(@text, '"+row['sort']+"')]")
+        context.testStep.wait_widget(row['sort'])
 
 @then(u'“行政区”页面内有')
 def step_impl(context):
     for row in context.table:
         logging.debug(row['district'])
-        context.testStep.wait_widget("//*[@text='"+row['district']+"']")
+        context.testStep.wait_widget(row['district'])
     
 @then(u'“商圈”页面内有')
 def step_impl(context):
     for row in context.table:
         logging.debug(row['area'])
-        context.testStep.wait_widget("//*[@text='"+row['area']+"']")
+        context.testStep.wait_widget(row['area'])
 
 @then(u'“地铁”页面内有')
 def step_impl(context):
     for row in context.table:
         logging.debug(row['subway'])
-        context.testStep.wait_widget("//*[@text='"+row['subway']+"']")
+        context.testStep.wait_widget(row['subway'])
 
 @then(u'“选择出行目的”页面内有')
 def step_impl(context):
     for row in context.table:
         logging.debug(row['target'])
-        context.testStep.wait_widget("//*[contains(@text, '"+row['target']+"')]")
+        context.testStep.wait_widget(row['target'])
         
 @then(u'“分享酒店”页面内有')
 def step_impl(context):
     for row in context.table:
         logging.debug(row['share'])
-        context.testStep.wait_widget("//*[contains(@text, '"+row['share']+"')]")
+        context.testStep.wait_widget(row['share'])
         
 ########################tap_widget#####################################
 @when(u'用户点击城市')
@@ -525,23 +525,24 @@ def step_impl(context):
 
 @when(u'用户点击“{widget_text}”')
 def step_impl(context, widget_text):
-    context.testStep.tap_widget("//*[@text='"+widget_text+"']")
+    #context.testStep.click_widget(widget_text)
+    context.testStep.tap_widget(widget_text)
 
 @when(u'用户点击“{widget_text}”页面')
 def step_impl(context, widget_text):
-    context.testStep.tap_widget("//*[@text='"+widget_text+"']")
+    context.testStep.tap_widget(widget_text)
 
 @when(u'用户点击“{widget_text}”按键')
 def step_impl(context, widget_text):
-    context.testStep.tap_widget("//*[@text='"+widget_text+"']")
+    context.testStep.tap_widget(widget_text)
 
 @when(u'用户点击“{widget_text}”按钮')
 def step_impl(context, widget_text):
-    context.testStep.tap_widget("//*[@text='"+widget_text+"']")
+    context.testStep.tap_widget(widget_text)
     
 @when(u'用户点击城市列表中的“{widget_text}”')
 def step_impl(context, widget_text):
-    context.testStep.tap_widget("//*[@text='"+widget_text+"']")
+    context.testStep.tap_widget(widget_text)
 
 
 @when(u'用户点击定位城市')

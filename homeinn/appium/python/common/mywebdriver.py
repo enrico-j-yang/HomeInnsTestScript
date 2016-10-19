@@ -16,12 +16,10 @@ from myelement import PositionProperty
 PATH = lambda p: os.path.abspath(
     os.path.join(os.path.dirname(__file__), p)
 )
-
-class UnknownStringException(Exception):
-    def __init__(self, value=None):
-        self.value = value
         
 class WebDriver(webdriver.Remote):
+    wait_duration = 30
+    
     def __init__(self, command_executor='http://127.0.0.1:4444/wd/hub',
                  desired_capabilities=None, browser_profile=None, proxy=None, keep_alive=False):
 
@@ -203,12 +201,14 @@ class WebDriver(webdriver.Remote):
             logging.debug("string is xpath")
             element = self.find_element_by_xpath(string)
         else:
-            logging.error("string is unknown")
-            raise UnknownStringException
+            try:
+                element = self.find_element_by_visible_text(string)
+            except NoSuchElementException:
+                raise NoSuchElementException
         return element
             
 
-    def find_elements_by_string(self, string, timeout=10, interval=1):
+    def find_elements_by_string(self, string, timeout=wait_duration, interval=1):
         logging.debug("string is "+string)
         wait = WebDriverWait(self, timeout, interval)
         #logging.debug("element is %s", element)
@@ -221,34 +221,70 @@ class WebDriver(webdriver.Remote):
             #wait.until(lambda dr: dr.find_element_by_xpath(string).is_displayed())
             elements = self.find_elements_by_xpath(string)
         else:
-            logging.error("string is unknown")
-            raise UnknownStringException
+            try:
+                element = self.find_elements_by_visible_text(string)
+            except NoSuchElementException:
+                raise NoSuchElementException
 
         logging.debug("elements is "+str(elements))
         return elements
         
-    def get_position_property_of_element_by_visible_text(self, string, position):
-        logging.debug("string:%s", string)
+    def find_element_by_visible_text(self, text):
         try:
-            element = self.find_element_by_string("//*[@text='"+string+"']")
+            element = self.find_element_by_accessibility_id(text)
         except NoSuchElementException:
             try:
-                element = self.find_element_by_string("//*[@label='"+string+"']")
+                element = self.find_element_by_xpath("//*[@text='"+text+"']")
             except NoSuchElementException:
                 try:
-                    element = self.find_element_by_string("//*[@name='"+string+"']")
+                    element = self.find_element_by_xpath("//*[@label='"+text+"']")
                 except NoSuchElementException:
                     try:
-                        element = self.find_element_by_string("//*[contains(@text, '"+string+"')]")
+                        element = self.find_element_by_xpath("//*[@name='"+text+"']")
                     except NoSuchElementException:
                         try:
-                            element = self.find_element_by_string("//*[contains(@label, '"+string+"')]")
+                            element = self.find_element_by_xpath("//*[contains(@text, '"+text+"')]")
                         except NoSuchElementException:
                             try:
-                                element = self.find_element_by_string("//*[contains(@name, '"+string+"')]")
+                                element = self.find_element_by_xpath("//*[contains(@label, '"+text+"')]")
                             except NoSuchElementException:
-                                raise NoSuchElementException
-
+                                try:
+                                    element = self.find_element_by_xpath("//*[contains(@name, '"+text+"')]")
+                                except NoSuchElementException:
+                                    raise NoSuchElementException
+        
+        return element
+        
+    def find_elements_by_visible_text(self, text):
+        try:
+            elements = self.find_elements_by_accessibility_id(text)
+        except NoSuchElementException:
+            try:
+                elements = self.find_elements_by_xpath("//*[@text='"+text+"']")
+            except NoSuchElementException:
+                try:
+                    elements = self.find_elements_by_xpath("//*[@label='"+text+"']")
+                except NoSuchElementException:
+                    try:
+                        elements = self.find_elements_by_xpath("//*[@name='"+text+"']")
+                    except NoSuchElementException:
+                        try:
+                            elements = self.find_elements_by_xpath("//*[contains(@text, '"+text+"')]")
+                        except NoSuchElementException:
+                            try:
+                                elements = self.find_elements_by_xpath("//*[contains(@label, '"+text+"')]")
+                            except NoSuchElementException:
+                                try:
+                                    elements = self.find_elements_by_xpath("//*[contains(@name, '"+text+"')]")
+                                except NoSuchElementException:
+                                    raise NoSuchElementException
+        
+        return elements
+        
+    def get_position_property_of_element_by_visible_text(self, string, position):
+        logging.debug("string:%s", string)
+        element = self.find_element_by_visible_text(string)
+        
         rect = {'leftside': element.location.get('x'), 
                 'topside': element.location.get('y'),
                 'rightside': element.location.get('x')+element.size['width'], 

@@ -37,6 +37,7 @@ class PositionProperty(object):
         return self._pos
 
 class WebElement(AppiumWebElement):
+    wait_duration = 30
     _porsition_property = PositionProperty()
     
     @property
@@ -58,7 +59,7 @@ class WebElement(AppiumWebElement):
     def find_element_by_string(self, string):
         return self.parent.find_element_by_string(string)
                     
-    def find_elements_by_string(self, string, timeout=10, interval=1):
+    def find_elements_by_string(self, string, timeout=wait_duration, interval=1):
         return self.parent.find_elements_by_string(string, timeout, interval)
         
     def get_position_property_of_element_by_visible_text(self, string, position):
