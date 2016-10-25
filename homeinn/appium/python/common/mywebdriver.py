@@ -222,16 +222,20 @@ class WebDriver(webdriver.Remote):
             elements = self.find_elements_by_xpath(string)
         else:
             try:
-                element = self.find_elements_by_visible_text(string)
+                elements = self.find_elements_by_visible_text(string)
             except NoSuchElementException:
                 raise NoSuchElementException
 
+            
         logging.debug("elements is "+str(elements))
         return elements
         
     def find_element_by_visible_text(self, text):
         try:
             element = self.find_element_by_accessibility_id(text)
+            if len(element)==0:
+                raise NoSuchElementException
+                
         except NoSuchElementException:
             try:
                 element = self.find_element_by_xpath("//*[@text='"+text+"']")
@@ -258,6 +262,8 @@ class WebDriver(webdriver.Remote):
     def find_elements_by_visible_text(self, text):
         try:
             elements = self.find_elements_by_accessibility_id(text)
+            if len(elements)==0:
+                raise NoSuchElementException
         except NoSuchElementException:
             try:
                 elements = self.find_elements_by_xpath("//*[@text='"+text+"']")

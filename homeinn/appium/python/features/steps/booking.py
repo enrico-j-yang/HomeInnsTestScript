@@ -119,20 +119,27 @@ def step_impl(context):
     else:
         logging.debug("*****wait for startshow activity time out*****")   
     
-    # wait for main activity
-    if context.testStep.wait_window('.activity.MainActivity'):
-        logging.debug("*****main activity OK*****")
-    else:
-        logging.debug("*****wait for main activity time out*****")
-
-    assert ('.activity.MainActivity' == context.testStep.current_window())
+    # wait for main window
+    context.testStep.wait_widget('过夜房')
+    context.testStep.wait_widget('立即预订')
+    context.testStep.wait_widget('预订')
+    context.testStep.wait_widget('活动')
+    context.testStep.wait_widget('服务')
+    context.testStep.wait_widget('我的')
+    
     context.testStep.tap_permision_widget("accept")
     
     
 #############################################################################
 @given(u'“{current_pos}”为“{widget_text}”')
 def step_impl(context, current_pos, widget_text):
-    element = context.testStep.has_widget("//*[@text='"+widget_text+"']", context.testStep._under(current_pos)+context.testStep._above("最近选择"))
+    element = context.testStep.has_widget(widget_text, context.testStep._under(current_pos)+context.testStep._above("最近选择"))
+    #element = context.testStep.has_widget("//*[@text='"+widget_text+"']", context.testStep._near(current_pos))
+    context.element = element
+    
+@then(u'“{current_pos}”为“{widget_text}”')
+def step_impl(context, current_pos, widget_text):
+    element = context.testStep.has_widget(widget_text, context.testStep._under(current_pos)+context.testStep._above("最近选择"))
     #element = context.testStep.has_widget("//*[@text='"+widget_text+"']", context.testStep._near(current_pos))
     context.element = element
 
@@ -160,17 +167,8 @@ def step_impl(context, roomtype, keyword):
     context.testStep.wait_widget("//*[@text='"+roomtype+"']")
     context.testStep.wait_widget("//*[@text='"+keyword+"']")
 
-@then(u'掌上如家跳转到选择入住时间界面')
-def step_impl(context):
-    today = datetime.date.today()
-    context.testStep.wait_widget("//*[contains(@text, '选择入住时间')]")
-    context.testStep.wait_widget("//*[contains(@text, '离店')]")
-    logging.debug("//*[contains(@text, '"+str(today.year)+"年"+str(today.month)+"月')]")
-    
-    context.testStep.wait_widget("//*[contains(@text, '"+str(today.year)+"年"+str(today.month)+"月')]")
-
-@then(u'掌上如家出现选择入住时间界面')
-def step_impl(context):
+@then(u'掌上如家{verb}选择入住时间界面')
+def step_impl(context, verb):
     today = datetime.date.today()
     context.testStep.wait_widget("//*[contains(@text, '选择入住时间')]")
     context.testStep.wait_widget("//*[contains(@text, '离店')]")
@@ -201,10 +199,19 @@ def step_impl(context, checkin, checkout):
     context.check_out_date = _parse_date(checkout)
 
     date_layout = context.testStep.has_widget("com.ziipin.homeinn:id/date_layout")
-    date_layout.find_element_by_string("//*[@text='"+str(context.check_in_date.month)+"月']")
-    date_layout.find_element_by_string("//*[@text='"+str(context.check_out_date.month)+"月']")
-    date_layout.find_element_by_string("//*[@text='"+str(context.check_in_date.day)+"']")
-    date_layout.find_element_by_string("//*[@text='"+str(context.check_out_date.day)+"']")
+    date_layout.find_element_by_string(str(context.check_in_date.month)+"月")
+    date_layout.find_element_by_string(str(context.check_out_date.month)+"月")
+    date_layout.find_element_by_string(str(context.check_in_date.day))
+    date_layout.find_element_by_string(str(context.check_out_date.day))
+
+@then(u'酒店页面显示为“{checkin}”入住，“{checkout}”离店')
+def step_impl(context, checkin, checkout):
+    context.check_in_date = _parse_date(checkin)
+    context.check_out_date = _parse_date(checkout)
+
+    date_layout = context.testStep.has_widget("com.ziipin.homeinn:id/detail_date_layout")
+    date_layout.find_element_by_string(str(context.check_in_date.month)+"月"+str(context.check_in_date.day)+"日")
+    date_layout.find_element_by_string(str(context.check_out_date.month)+"月"+str(context.check_out_date.day)+"日")
     
 @when(u'用户选择第一个酒店')
 def step_impl(context):
