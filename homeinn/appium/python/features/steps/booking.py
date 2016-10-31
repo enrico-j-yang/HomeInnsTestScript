@@ -107,25 +107,19 @@ def step_impl(context):
         finish = False
         while not (finish):
             try:
-                context.testStep.has_widget("com.ziipin.homeinn:id/start_use_btn")
+                context.testStep.wait_widget("com.ziipin.homeinn:id/start_use_btn", 5)
             except Exception:
                 context.testStep.driver.swipe(600,486, 98,489, 500)
             else:
                 finish = True
         
-        start = context.testStep.has_widget("com.ziipin.homeinn:id/start_use_btn")
+        start = context.testStep.wait_widget("com.ziipin.homeinn:id/start_use_btn", 5)
         assert start
         context.touchAction.press(start).release().perform()
     else:
         logging.debug("*****wait for startshow activity time out*****")   
     
     # wait for main window
-    context.testStep.wait_widget('过夜房')
-    context.testStep.wait_widget('立即预订')
-    context.testStep.wait_widget('预订')
-    context.testStep.wait_widget('活动')
-    context.testStep.wait_widget('服务')
-    context.testStep.wait_widget('我的')
     
     context.testStep.tap_permision_widget("accept")
     
@@ -152,7 +146,7 @@ def step_impl(context, widget_text):
 @then(u'城市显示为“{widget_text}”')
 def step_impl(context, widget_text):
     current_city = context.testStep.has_widget("com.ziipin.homeinn:id/city_layout")
-    current_city.find_element_by_string("//*[@text='"+widget_text+"']")
+    current_city.find_element_by_string(widget_text)
     
 @given(u'当前时间超过{hour}点')
 def step_impl(context, hour):
@@ -164,17 +158,17 @@ def step_impl(context, hour):
 
 @then(u'“{roomtype}”页面有“{keyword}”条件')
 def step_impl(context, roomtype, keyword):
-    context.testStep.wait_widget("//*[@text='"+roomtype+"']")
-    context.testStep.wait_widget("//*[@text='"+keyword+"']")
+    context.testStep.wait_widget(roomtype)
+    context.testStep.wait_widget(keyword)
 
 @then(u'掌上如家{verb}选择入住时间界面')
 def step_impl(context, verb):
     today = datetime.date.today()
-    context.testStep.wait_widget("//*[contains(@text, '选择入住时间')]")
-    context.testStep.wait_widget("//*[contains(@text, '离店')]")
-    logging.debug("//*[contains(@text, '"+str(today.year)+"年"+str(today.month)+"月')]")
+    context.testStep.wait_widget('选择入住时间')
+    context.testStep.wait_widget('离店')
+    logging.debug(str(today.year)+"年"+str(today.month)+"月")
     
-    context.testStep.wait_widget("//*[contains(@text, '"+str(today.year)+"年"+str(today.month)+"月')]")
+    context.testStep.wait_widget(str(today.year)+"年"+str(today.month)+"月")
     
 @when(u'用户点击入住日期为“{checkin}”')
 def step_impl(context, checkin):
@@ -221,17 +215,16 @@ def step_impl(context):
 @then(u'掌上如家跳转到选房预订界面')
 def step_impl(context):
     try:
-        context.testStep.wait_widget("//*[contains(@text, '"+context.hotel+"')]")
+        context.testStep.wait_widget(context.hotel)
     except NoSuchElementException:
-        context.testStep.wait_widget("//*[contains(@text, '"+(context.hotel)[0:9]+"')]")
-    context.testStep.wait_widget("//*[@text='详情']")
-    context.testStep.wait_widget("//*[@text='预订']")
-
+        context.testStep.wait_widget((context.hotel)[0:9])
+    context.testStep.wait_widget('详情')
+    context.testStep.wait_widget('预订')
 
 @when(u'用户上划屏幕查看房型直到酒店房型有“{room_type}”')
 def step_impl(context, room_type):
     try:
-        room_type_widget = context.testStep.has_widget("//android.widget.TextView[@text='"+room_type+"']")
+        room_type_widget = context.testStep.has_widget(room_type)
     except NoSuchElementException:
         found = False
     else:
@@ -247,9 +240,8 @@ def step_impl(context, room_type):
     last_location = None
     
     while (not found):
-        end_p = context.testStep.has_widget("//android.widget.TextView[@text='"+start_p_text+"']")
-        start_p = context.testStep.has_widget("//android.widget.TextView[contains(@text, '房')]",
-                                                context.testStep._under(end_p))
+        end_p = context.testStep.has_widget(start_p_text)
+        start_p = context.testStep.has_widget('房', context.testStep._under(end_p))
         start_p_text = start_p.text
         location = start_p.location.get('y')
         logging.debug("location is %s", location)
@@ -263,7 +255,7 @@ def step_impl(context, room_type):
         #context.testStep.swipe_widget_by_direction("com.ziipin.homeinn:id/room_info_layout", "up")
         context.testStep._swipe_to_distination_half_by_half(start_p, end_p, "bottom2bottom")
         try:
-            room_type_widget = context.testStep.has_widget("//android.widget.TextView[@text='"+room_type+"']")
+            room_type_widget = context.testStep.has_widget(room_type)
         except NoSuchElementException:
             found = False
         else:
@@ -279,23 +271,23 @@ def step_impl(context, destination):
 @then(u'掌上如家关键词搜索列表显示“{hotel}”')
 def step_impl(context, hotel):
     try:
-        hotel_widget = context.testStep.has_widget("//android.widget.TextView[@text='"+hotel+"']")
+        hotel_widget = context.testStep.has_widget(hotel)
     except NoSuchElementException:
-        hotel_widget = context.testStep.has_widget("//android.widget.TextView[contains(@text, '"+hotel[0:9]+"')]")
+        hotel_widget = context.testStep.has_widget(hotel[0:9])
     context.hotel = hotel
 
 
 @then(u'“{room_type}”上划到屏幕最顶')
 def step_impl(context, room_type):
-    room_type_widget = context.testStep.has_widget("//android.widget.TextView[@text='"+room_type+"']")
+    room_type_widget = context.testStep.has_widget(room_type)
     end_p = context.testStep.has_widget("com.ziipin.homeinn:id/room_title_layout")
     context.testStep._swipe_to_distination_half_by_half(room_type_widget, end_p)
 
 @given(u'“{room_type}”有“{member_price}”房间')
 def step_impl(context, room_type, member_price):
-    room_type_widget = context.testStep.has_widget("//android.widget.TextView[@text='"+room_type+"']")
+    room_type_widget = context.testStep.has_widget(room_type)
     #context.room_type_widget
-    member_price_widget = context.testStep.has_widget("//android.widget.TextView[@text='"+member_price+"']")
+    member_price_widget = context.testStep.has_widget(member_price)
 
     booking_widget = context.testStep.has_widget("//android.widget.Button",
                                              context.testStep._under(room_type_widget)+
@@ -303,7 +295,7 @@ def step_impl(context, room_type, member_price):
     
     logging.debug(booking_widget.text)
     logging.debug(str(booking_widget.location))
-    room_of_booking_widget = context.testStep.has_widget("//android.widget.TextView[contains(@text, '房')]",
+    room_of_booking_widget = context.testStep.has_widget('房',
                                                     context.testStep._above(booking_widget)+
                                                     context.testStep._near(booking_widget))
                                                     
@@ -321,9 +313,9 @@ def step_impl(context, member_price, booking):
 @when(u'用户选择“{hotel}”')
 def step_impl(context, hotel):
     try:
-        hotel_widget = context.testStep.tap_widget("//com.ziipin.homeinn:id/text_hotel_name[@text='"+hotel+"']")
+        hotel_widget = context.testStep.tap_widget(hotel)
     except NoSuchElementException:
-        hotel_widget = context.testStep.tap_widget("//com.ziipin.homeinn:id/text_hotel_name[contains(@text, '"+hotel[0:8]+"')]")
+        hotel_widget = context.testStep.tap_widget(hotel[0:8])
     context.hotel = hotel
 
 #@then(u'检查酒店显示是否正确')
@@ -335,7 +327,7 @@ def step_impl(context, hotel):
 
 @then(u'填写订单页面向下滑动')
 def step_imp(context):
-    start_p = context.testStep.has_widget("//android.widget.TextView[@text='信用住，先住后付']")
+    start_p = context.testStep.has_widget('信用住，先住后付')
     end_p = context.testStep.has_widget("com.ziipin.homeinn:id/order_hotel_name")
     context.testStep._swipe_to_distination_half_by_half(start_p, end_p)
 
@@ -359,21 +351,21 @@ def step_impl(context):
     end_p = context.testStep.has_widget("com.ziipin.homeinn:id/order_hotel_name")
     logging.debug(end_p)
     context.testStep._swipe_to_distination_half_by_half(start_p, end_p)
-    context.testStep.has_widget("//*[@text='取消订单']")
+    context.testStep.has_widget('取消订单')
     
 
 @given(u'有“{widget_text}”的订单')
 def step_impl(context, widget_text):
-    hotel_widget = context.testStep.has_widget("//*[@text='"+widget_text+"']")
+    hotel_widget = context.testStep.has_widget(widget_text)
     context.hotel_widget = hotel_widget
 
 @when(u'用户点击以上订单')
 def step_impl(context):
     try:
         try:
-            hotel_widget = context.testStep.tap_widget("//*[@text='"+context.hotel+"']")
+            hotel_widget = context.testStep.tap_widget(context.hotel)
         except NoSuchElementException:
-            hotel_widget = context.testStep.tap_widget("//*[contains(@text, '"+context.hotel[0:8]+"')]")
+            hotel_widget = context.testStep.tap_widget(context.hotel[0:8])
     
         context.hotel_widget = hotel_widget
     except:
@@ -402,7 +394,7 @@ def step_impl(context, widget_text):
     
 @then(u'掌上如家跳转到地图选择酒店界面')
 def step_impl(context):
-    context.testStep.wait_widget("//*[contains(@text, '全部')]")
+    context.testStep.wait_widget('全部')
 
 @then(u'“酒店详情”界面出现“{widget_text}”页面')
 def step_impl(context, widget_text):
@@ -411,11 +403,15 @@ def step_impl(context, widget_text):
 @then(u'掌上如家提示“{widget_text}”')
 def step_impl(context, widget_text):
     context.testStep.wait_widget(widget_text)
+    
+@then(u'掌上如家有“{widget_text}”')
+def step_impl(context, widget_text):
+    context.testStep.wait_widget(widget_text)
 
 @given(u'用户有可用电子券')
 def step_impl(context):
     try:
-        context.coupon = context.testStep.has_widget("//*[@text='您有可用电子券']")
+        context.coupon = context.testStep.has_widget('您有可用电子券')
     except NoSuchElementException:
         context.coupon = None
         logging.info("no coupon available")
@@ -423,7 +419,7 @@ def step_impl(context):
 @given(u'有“去选房”')
 def step_impl(context):
     try:
-        context.select_room = context.testStep.has_widget("//*[@text='去选房']")
+        context.select_room = context.testStep.has_widget('去选房')
     except NoSuchElementException:
         context.select_room = None
         logging.info("can not choose room")
@@ -431,12 +427,12 @@ def step_impl(context):
 @then(u'掌上如家出现选择优惠券界面')
 def step_impl(context):
     if not (context.coupon == None):
-        context.testStep.wait_widget("//*[@text='选择优惠券']")
+        context.testStep.wait_widget('选择优惠券')
 
 @then(u'掌上如家出现自助服务界面')
 def step_impl(context):
     if not (context.select_room == None):
-        context.testStep.wait_widget("//*[@text='自助服务']")
+        context.testStep.wait_widget('自助服务')
             
 @then(u'掌上如家有“{district}”、“{circle}”和“{subway}”三个页面')
 def step_impl(context, district, circle, subway):
@@ -475,7 +471,6 @@ def step_impl(context):
 def step_impl(context):
     for row in context.table:
         logging.debug(row['brand'])
-        #context.testStep.wait_widget("//*[@text='"+row['brand']+"']")
         context.testStep.wait_widget(row['brand'])
 
 
@@ -590,7 +585,7 @@ def step_impl(context):
 
 @when(u'用户点击搜索列表中“{hotel}”')
 def step_impl(context, hotel):
-    context.testStep.tap_widget("//android.widget.TextView[@text='"+hotel+"']")
+    context.testStep.tap_widget(hotel)
     
 @when(u'用户点击电子券')
 def step_impl(context):
@@ -706,9 +701,9 @@ def step_impl(context):
 @when(u'用户点击确认选择')
 def step_impl(context):
     if not (context.coupon == None):
-        context.testStep.tap_widget("//*[@text='确认选择']")
+        context.testStep.tap_widget('确认选择')
 
 @when(u'用户点击去选房')
 def step_impl(context):
     if not (context.select_room == None):
-        context.testStep.tap_widget("//*[@text='去选房']")
+        context.testStep.tap_widget('去选房')

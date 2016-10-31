@@ -350,8 +350,8 @@ class CommonTestStep(unittest.TestCase):
             end_y = window_max_y - 1
         
         if one_step == False:
-            logging.debug("swipe:%d, %d", start_y, end_y)
             while (abs(start_y-end_y)>100):
+                logging.debug("swipe:%d, %d", start_y, end_y)
                 self.driver.swipe(start_x, start_y, start_x, (start_y+end_y)/2)
                 start_y = (start_y+end_y)/2
                 
@@ -366,7 +366,7 @@ class CommonTestStep(unittest.TestCase):
         logging.debug("des_date:%s", des_date)
         logging.debug("des_date.isoweekday():%d", des_date.isoweekday())
     
-        current_date_bar = self.driver.find_element_by_string("//*[contains(@text, '年')]")
+        current_date_bar = self.driver.find_element_by_string('年')
         year = current_date_bar.text[0:current_date_bar.text.index(u"年")]
         month = current_date_bar.text[current_date_bar.text.index(u"年")+1:current_date_bar.text.index(u"月")]
         current_date = des_date.replace(day=1).replace(year=int(year)).replace(month=int(month))
@@ -376,88 +376,33 @@ class CommonTestStep(unittest.TestCase):
         listView = self.driver.find_element_by_string("com.ziipin.homeinn:id/date_list")
         
         try:
-            destination_month = self.driver.find_element_by_string("//*[@text='"+str(des_date.year)+"年"+str(des_date.month)+"月']")
+            destination_month = self.driver.find_element_by_string(str(des_date.year)+"年"+str(des_date.month)+"月")
             
         except NoSuchElementException:
             if des_date.month != current_date.month:
                 # swipe up calendar certain times according to month count from today
-                if des_date.month > current_date.month:
-                    for i in range((des_date.month-current_date.month)):
+                if (des_date.year - current_date.year) * 12 + des_date.month - current_date.month > 1:
+                    for i in range((des_date.year - current_date.year) * 12 + des_date.month - current_date.month):
                         # find last day and swipe it to the top
-                        logging.info("find last day and swipe it to the top")
-                        current_month_last_day = (current_date.replace(day=1).replace(month = current_date.month+1) - datetime.timedelta(days=1))
-
-                        logging.debug("current_month_last_day:%s", current_month_last_day)
-                        logging.debug("current_month_last_day.isoweekday():%s", current_month_last_day.isoweekday())
-                        try:
-                            current_month_last_day_widget = listView.find_element_by_string("//*[@text='"+str(current_month_last_day.day)+"']")
-                        except NoSuchElementException:
-                            if current_month_last_day.isoweekday() != 7:
-                                current_month_last_day_widget = self._find_day_widget_by_nearby_date(listView, current_month_last_day, _YESTERDAY | _LASTWEEK)
-                            else:
-                                current_month_last_day_widget = self._find_day_widget_by_nearby_date(listView, current_month_last_day, _LASTWEEK)
-
-                        logging.debug("self._swipe_to_distination_half_by_half(current_month_last_day_widget, listView)")
-                        self._swipe_to_distination_half_by_half(current_month_last_day_widget, listView)
-                        '''''
-                        # final swipe
-                        try:
-                            current_month_last_day_widget = listView.find_element_by_string("//*[@text='"+str(current_month_last_day.day)+"']")
-                        except NoSuchElementException:
-                            if current_month_last_day.isoweekday() != 7:
-                                current_month_last_day_widget = self._find_day_widget_by_nearby_date(listView, current_month_last_day, _YESTERDAY | _LASTWEEK)
-                            else:
-                                current_month_last_day_widget = self._find_day_widget_by_nearby_date(listView, current_month_last_day, _LASTWEEK)
-
-                        self._swipe_to_distination(current_month_last_day_widget, listView)
-                        '''
-                        # then find current dat bar again and swipe it to the top
-                        logging.info("then find current dat bar again and swipe it to the top")
-                        current_date_bar = self.driver.find_element_by_string("//*[contains(@text, '年')]")
-                        year = current_date_bar.text[0:current_date_bar.text.index(u"年")]
-                        month = current_date_bar.text[current_date_bar.text.index(u"年")+1:current_date_bar.text.index(u"月")]
-                        current_date = des_date.replace(year=int(year)).replace(month=int(month))
-                        logging.debug("current_date:%s", current_date)
+                        self._swipe_to_distination_half_by_half(listView, listView, "bottom2top")
                     
-                        self._swipe_to_distination_half_by_half(current_date_bar, listView)
-                        #self.swipe_widget_by_direction("com.ziipin.homeinn:id/date_list", "up")
-                    
-                    destination_month = self.driver.find_element_by_string("//*[@text='"+str(des_date.year)+"年"+str(des_date.month)+"月']")
+                    destination_month = self.driver.find_element_by_string(str(des_date.year)+"年"+str(des_date.month)+"月")
                     
                         
                 else:
-                    for i in range((current_date.month-des_date.month)):
+                    for i in range((current_date.year - des_date.year) * 12 + current_date.month - des_date.month):
                         # find current dat bar and swipe it to the bottom
-                        logging.info("find current dat bar and swipe it to the bottom")
-                        current_date_bar = self.driver.find_element_by_string("//*[contains(@text, '年')]")
-                        year = current_date_bar.text[0:current_date_bar.text.index(u"年")]
-                        month = current_date_bar.text[current_date_bar.text.index(u"年")+1:current_date_bar.text.index(u"月")]
-                        current_date = des_date.replace(year=int(year)).replace(month=int(month))
-                        logging.debug("current_date:%s", current_date)
-
-                        logging.debug("self._swipe_to_distination_half_by_half(current_date_bar, listView, 'bottom')")
-                        self._swipe_to_distination_half_by_half(current_date_bar, listView, "bottom")
-                        '''''
-                        # final swipe
-                        current_date_bar = self.driver.find_element_by_string("//*[contains(@text, '年')]")
-                        self._swipe_to_distination(current_date_bar, listView)
-                        '''
-                        #self.swipe_widget_by_direction("com.ziipin.homeinn:id/date_list", "down")
+                        self._swipe_to_distination_half_by_half(listView, listView, "top2bottom")
                     try:
-                        destination_month = self.driver.find_element_by_string("//*[@text='"+str(des_date.year)+"年"+str(des_date.month)+"月']")
+                        destination_month = self.driver.find_element_by_string(str(des_date.year)+"年"+str(des_date.month)+"月")
                     except NoSuchElementException:
                         self.driver.swipe(listView.size['width']/2, listView.location.get('y'),
                                            listView.size['width']/2, listView.location.get('y')+50)
-                        destination_month = self.driver.find_element_by_string("//*[@text='"+str(des_date.year)+"年"+str(des_date.month)+"月']")
+                        destination_month = self.driver.find_element_by_string(str(des_date.year)+"年"+str(des_date.month)+"月")
         else:
             # swipe up the calendar until destination month text bar reach the top of canlendar
             logging.debug("self._swipe_to_distination_half_by_half(destination_month, listView)")
-            self._swipe_to_distination_half_by_half(destination_month, listView)
-            '''''
-            # final swipe
-            destination_month = self.driver.find_element_by_string("//*[@text='"+str(des_date.year)+"年"+str(des_date.month)+"月']")
-            self._swipe_to_distination(destination_month, listView)
-            '''
+            self._swipe_to_distination_half_by_half(destination_month, listView, "top2top")
         try:
             destination_day = self.driver.find_element_by_string("//*[@text='"+str(des_date.year)+"年"+str(des_date.month)+"月']/parent::*//*[@text='"+str(des_date.day)+"']")
         except NoSuchElementException:
@@ -584,7 +529,7 @@ class CommonTestStep(unittest.TestCase):
     
     def tap_button_if_exist(self, string):
         try:
-            button = self.driver.find_element_by_string(string)        
+            button = self.driver.find_element_by_string(string, 3)        
             self.touchAction.press(button, self.tap_duration).release().perform()
             logging.debug("%s button exists", string)
         except:
