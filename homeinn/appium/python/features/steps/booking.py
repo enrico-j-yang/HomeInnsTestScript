@@ -193,6 +193,12 @@ def step_impl(context, checkout):
     context.check_out_date = _parse_date(checkout)
     context.testStep.tap_date_in_calendar(context.check_out_date)
 
+@then(u'日历控件向上划动')
+def step_imp(context):
+    start_p = context.testStep.has_widget("//android.widget.CheckedTextView[@text='国庆节']")
+    end_p = context.testStep.has_widget("//android.widget.TextView[@text='2017年1月']")
+    context.testStep._swipe_to_distination_half_by_half(start_p, end_p)
+
 @then(u'“过夜房”页面显示为“{checkin}”入住，“{checkout}”离店')
 def step_impl(context, checkin, checkout):
     context.check_in_date = _parse_date(checkin)
@@ -270,11 +276,15 @@ def step_impl(context, room_type):
             found = True
             context.room_type_widget = room_type_widget
     
-@when(u'用户输入“{destination}”')
+@when(u'用户在关键字中输入“{destination}”')
 def step_impl(context, destination):
     context.expectation = destination
     context.testStep.input_textbox_uft8("com.ziipin.homeinn:id/search_filter_input", destination)
 
+@when(u'用户在城市中输入“{city}”')
+def step_impl(context, city):
+    context.expectation = city
+    context.testStep.input_textbox_uft8("com.ziipin.homeinn:id/city_input", city)
 
 @then(u'掌上如家关键词搜索列表显示“{hotel}”')
 def step_impl(context, hotel):
