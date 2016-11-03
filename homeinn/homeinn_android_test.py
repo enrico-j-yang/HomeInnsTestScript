@@ -30,7 +30,7 @@ class KoodarAssistantAndroidTests(unittest.TestCase):
         print "\nsetUp"
         desired_caps = {}
         desired_caps['platformName'] = 'Android'
-        desired_caps['platformVersion'] = '5.1'
+        desired_caps['platformVersion'] = '4.4'
         desired_caps['deviceName'] = 'Android'
         desired_caps['appPackage'] = 'com.ziipin.homeinn'
         desired_caps['appActivity'] = '.activity.SplashActivity'
