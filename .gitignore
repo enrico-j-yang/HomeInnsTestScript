@@ -1,0 +1,13 @@
+*.patch
+*.swp
+.DS_Store
+node_modules
+.idea/
+*.log
+.*~
+*~
+.idea
+__pycache__
+*.pyc
+.cache/
+homeinn/appium/python/*.png
