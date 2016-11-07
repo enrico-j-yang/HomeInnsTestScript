@@ -18,7 +18,7 @@ PATH = lambda p: os.path.abspath(
 )
         
 class WebDriver(webdriver.Remote):
-    wait_duration = 30
+    wait_duration = 10
     
     def __init__(self, command_executor='http://127.0.0.1:4444/wd/hub',
                  desired_capabilities=None, browser_profile=None, proxy=None, keep_alive=False):
