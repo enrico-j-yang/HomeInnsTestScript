@@ -462,6 +462,7 @@ def step_impl(context):
     context.testStep.wait_widget('查看地图')
 
 
+
 @then(u'掌上如家{verb}我的界面')
 def step_impl(context, verb):
     context.testStep.wait_widget('我的钱包')
