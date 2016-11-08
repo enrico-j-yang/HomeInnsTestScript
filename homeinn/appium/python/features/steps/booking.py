@@ -120,7 +120,12 @@ def step_impl(context):
         logging.debug("*****wait for startshow activity time out*****")   
     
     # wait for main window
-    
+    context.testStep.wait_widget('过夜房')
+    context.testStep.wait_widget('立即预订')
+    context.testStep.wait_widget('预订')
+    context.testStep.wait_widget('活动')
+    context.testStep.wait_widget('服务')
+    context.testStep.wait_widget('我的')  
     context.testStep.tap_permision_widget("accept")
     
     
@@ -158,6 +163,8 @@ def step_impl(context, hour):
 
 @then(u'“{roomtype}”页面有“{keyword}”条件')
 def step_impl(context, roomtype, keyword):
+    context.testStep.wait_widget("//*[@text='"+roomtype+"']")
+    context.testStep.wait_widget("//*[@text='"+keyword+"']")
     context.testStep.wait_widget(roomtype)
     context.testStep.wait_widget(keyword)
 
@@ -227,6 +234,7 @@ def step_impl(context):
     context.testStep.wait_widget('详情')
     context.testStep.wait_widget('预订')
 
+
 @when(u'用户上划屏幕查看房型直到酒店房型有“{room_type}”')
 def step_impl(context, room_type):
     try:
@@ -293,6 +301,28 @@ def step_impl(context, room_type):
     end_p = context.testStep.has_widget("com.ziipin.homeinn:id/room_title_layout")
     context.testStep._swipe_to_distination_half_by_half(room_type_widget, end_p)
 
+#@given(u'“{room_type}”有“{member_price}”房间')
+#def step_impl(context, room_type, member_price):
+    #room_type_widget = context.testStep.has_widget(room_type)
+    #context.room_type_widget
+    #member_price_widget = context.testStep.has_widget(member_price)
+
+    #booking_widget = context.testStep.has_widget("//android.widget.Button",
+                                             #context.testStep._under(room_type_widget)+
+                                             #context.testStep._right(member_price_widget))
+    
+    #logging.debug(booking_widget.text)
+    #logging.debug(str(booking_widget.location))
+    #room_of_booking_widget = context.testStep.has_widget('房',
+                                                    #context.testStep._above(booking_widget)+
+                                                    #context.testStep._near(booking_widget))
+                                                    
+    
+    #logging.debug(room_of_booking_widget.text)
+    #logging.debug(room_type_widget.text)
+    #assert room_of_booking_widget.text == room_type_widget.text
+    #context.booking_widget = booking_widget
+
 @given(u'“{room_type}”有“{member_price}”房间')
 def step_impl(context, room_type, member_price):
     room_type_widget = context.testStep.has_widget(room_type)
@@ -341,6 +371,12 @@ def step_imp(context):
     end_p = context.testStep.has_widget("com.ziipin.homeinn:id/order_hotel_name")
     context.testStep._swipe_to_distination_half_by_half(start_p, end_p)
 
+@then(u'首页向下滑动')
+def step_imp(context):
+    start_p = context.testStep.has_widget('立即预订')
+    end_p = context.testStep.has_widget("com.ziipin.homeinn:id/main_brand_text")
+    context.testStep._swipe_to_distination_half_by_half(start_p, end_p)
+
 #@then(u'检查酒店')
 #def step_imp(context):
     #org_text = '如家-广州琶洲会展中心琶洲地铁站店'
@@ -362,6 +398,18 @@ def step_impl(context):
     logging.debug(end_p)
     context.testStep._swipe_to_distination_half_by_half(start_p, end_p)
     context.testStep.has_widget('取消订单')
+
+
+@when(u'用户上划屏幕查看我的页面直到有“我的收藏”')
+def step_impl(context):
+    start_p = context.testStep.has_widget("com.ziipin.homeinn:id/user_invoice_layout")
+    logging.debug(start_p.text)
+    
+    end_p = context.testStep.has_widget("com.ziipin.homeinn:id/user_check_layout")
+    logging.debug(end_p)
+    context.testStep._swipe_to_distination_half_by_half(start_p, end_p)
+    context.testStep.has_widget('我的收藏')
+
     
 
 @given(u'有“{widget_text}”的订单')
@@ -455,6 +503,12 @@ def step_impl(context):
     context.testStep.wait_widget('排序')
     context.testStep.wait_widget('品牌')
     context.testStep.wait_widget('筛选')
+    context.testStep.wait_widget('查看地图')
+
+@then(u'掌上如家跳转到选择时租房酒店界面')
+def step_impl(context):
+    context.testStep.wait_widget('排序')
+    context.testStep.wait_widget('品牌')
     context.testStep.wait_widget('查看地图')
 
 
@@ -557,6 +611,9 @@ def step_impl(context, widget_text):
 def step_impl(context, widget_text):
     context.testStep.tap_widget(widget_text)
 
+@when(u'用户点击民宿')
+def step_impl(context):
+    context.testStep.tap_widget("//android.widget.LinearLayout[1]/android.widget.FrameLayout[1]/android.widget.LinearLayout[1]/android.widget.FrameLayout[1]/android.widget.ScrollView[1]/android.widget.LinearLayout[1]/android.widget.FrameLayout[3]/android.widget.HorizontalScrollView[1]/android.widget.LinearLayout[1]/android.widget.ImageView[2]")
 
 @when(u'用户点击定位城市')
 def step_impl(context):
