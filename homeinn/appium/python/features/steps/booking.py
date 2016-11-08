@@ -325,9 +325,9 @@ def step_impl(context, room_type):
 
 @given(u'“{room_type}”有“{member_price}”房间')
 def step_impl(context, room_type, member_price):
-    room_type_widget = context.testStep.has_widget("//android.widget.TextView[@text='"+room_type+"']")
+    room_type_widget = context.testStep.has_widget(room_type)
     #context.room_type_widget
-    member_price_widget = context.testStep.has_widget("//android.widget.TextView[@text='"+member_price+"']")
+    member_price_widget = context.testStep.has_widget(member_price)
 
     booking_widget = context.testStep.has_widget("//android.widget.Button",
                                              context.testStep._under(room_type_widget)+
@@ -335,7 +335,7 @@ def step_impl(context, room_type, member_price):
     
     logging.debug(booking_widget.text)
     logging.debug(str(booking_widget.location))
-    room_of_booking_widget = context.testStep.has_widget("//android.widget.TextView[contains(@text, '房')]",
+    room_of_booking_widget = context.testStep.has_widget('房',
                                                     context.testStep._above(booking_widget)+
                                                     context.testStep._near(booking_widget))
                                                     
@@ -409,6 +409,7 @@ def step_impl(context):
     logging.debug(end_p)
     context.testStep._swipe_to_distination_half_by_half(start_p, end_p)
     context.testStep.has_widget('我的收藏')
+
     
 
 @given(u'有“{widget_text}”的订单')
