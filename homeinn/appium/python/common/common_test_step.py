@@ -383,15 +383,23 @@ class CommonTestStep(unittest.TestCase):
                 # swipe up calendar certain times according to month count from today
                 if (des_date.year - current_date.year) * 12 + des_date.month - current_date.month > 1:
                     for i in range((des_date.year - current_date.year) * 12 + des_date.month - current_date.month):
-                        # find last day and swipe it to the top
-                        self._swipe_to_distination_half_by_half(listView, listView, "bottom2top")
+                        # find next month bar and swipe it to the top, otherwise swipe calendar from bottom to top
+                        next_month_date = current_date.replace(day=1).replace(year=int(year)).replace(month=int(month)+1)
+                        logging.debug("next_month_date:%s", next_month_date)
+                        try:
+                            next_month = self.driver.find_element_by_string(str(next_month_date.year)+"年"+str(next_month_date.month)+"月")
+                        except NoSuchElementException: 
+                            self._swipe_to_distination_half_by_half(listView, listView, "bottom2top")
+                        else:
+                            self._swipe_to_distination_half_by_half(next_month, listView, "top2top")
                     
                     destination_month = self.driver.find_element_by_string(str(des_date.year)+"年"+str(des_date.month)+"月")
-                    
+                    self._swipe_to_distination_half_by_half(destination_month, listView, "top2top")
                         
                 else:
                     for i in range((current_date.year - des_date.year) * 12 + current_date.month - des_date.month):
-                        # find current dat bar and swipe it to the bottom
+                        # find previous month bar after swiping current month bar to the bottom
+                        # swipe calendar from top to bottom 
                         self._swipe_to_distination_half_by_half(listView, listView, "top2bottom")
                     try:
                         destination_month = self.driver.find_element_by_string(str(des_date.year)+"年"+str(des_date.month)+"月")
