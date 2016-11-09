@@ -535,9 +535,9 @@ class CommonTestStep(unittest.TestCase):
             self.driver.get_screenshot_as_file(screenshotname)
         self.driver.quit()
     
-    def tap_button_if_exist(self, string):
+    def tap_button_if_exist(self, string, wait_duration=3):
         try:
-            button = self.driver.find_element_by_string(string, 3)        
+            button = self.driver.find_element_by_string(string, wait_duration)        
             self.touchAction.press(button, self.tap_duration).release().perform()
             logging.debug("%s button exists", string)
         except:
