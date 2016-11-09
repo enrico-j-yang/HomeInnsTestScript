@@ -103,7 +103,7 @@ def step_impl(context):
 @then(u'掌上如家会出现')
 def step_impl(context):
     # wait for startshow activity
-    if context.testStep.wait_window('.activity.StartShowActivity'):
+    if context.testStep.wait_window('.activity.StartShowActivity', 5):
         finish = False
         while not (finish):
             try:
@@ -117,8 +117,9 @@ def step_impl(context):
         assert start
         context.touchAction.press(start).release().perform()
     else:
-        logging.debug("*****wait for startshow activity time out*****")   
-    
+        logging.debug("*****wait for startshow activity time out*****")
+        
+    context.testStep.tap_permision_widget("accept")
     # wait for main window
     context.testStep.wait_widget('过夜房')
     context.testStep.wait_widget('立即预订')
@@ -126,7 +127,6 @@ def step_impl(context):
     context.testStep.wait_widget('活动')
     context.testStep.wait_widget('服务')
     context.testStep.wait_widget('我的')  
-    context.testStep.tap_permision_widget("accept")
     
     
 #############################################################################
@@ -325,6 +325,8 @@ def step_impl(context, room_type):
 
 @given(u'“{room_type}”有“{member_price}”房间')
 def step_impl(context, room_type, member_price):
+    temp = context.testStep.driver.find_elements_by_visible_text("订")
+    logging.debug(len(temp))
     room_type_widget = context.testStep.has_widget(room_type)
     #context.room_type_widget
     member_price_widget = context.testStep.has_widget(member_price)
@@ -335,7 +337,7 @@ def step_impl(context, room_type, member_price):
     
     logging.debug(booking_widget.text)
     logging.debug(str(booking_widget.location))
-    room_of_booking_widget = context.testStep.has_widget('房',
+    room_of_booking_widget = context.testStep.has_widget(room_type,
                                                     context.testStep._above(booking_widget)+
                                                     context.testStep._near(booking_widget))
                                                     
@@ -613,7 +615,7 @@ def step_impl(context, widget_text):
 
 @when(u'用户点击民宿')
 def step_impl(context):
-    context.testStep.tap_widget("//android.widget.LinearLayout[1]/android.widget.FrameLayout[1]/android.widget.LinearLayout[1]/android.widget.FrameLayout[1]/android.widget.ScrollView[1]/android.widget.LinearLayout[1]/android.widget.FrameLayout[3]/android.widget.HorizontalScrollView[1]/android.widget.LinearLayout[1]/android.widget.ImageView[2]")
+    context.testStep.tap_widget("//android.widget.LinearLayout[1]/android.widget.FrameLayout[1]/android.widget.LinearLayout[1]/android.widget.FrameLayout[1]/android.widget.ScrollView[1]/android.widget.LinearLayout[1]/android.widget.FrameLayout[3]/android.widget.HorizontalScrollView[1]/android.widget.LinearLayout[1]/android.widget.ImageView[1]")
 
 @when(u'用户点击定位城市')
 def step_impl(context):
