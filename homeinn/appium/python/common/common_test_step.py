@@ -19,6 +19,7 @@ from PIL import Image
 
 from mywebdriver import WebDriver
 from myelement import PositionProperty
+from myelement import WebElement as MyElement
 
 # Returns abs path relative to this file and not cwd
 PATH = lambda p: os.path.abspath(
@@ -683,18 +684,37 @@ class CommonTestStep(unittest.TestCase):
     
     @test_step_info    
     def tap_button(self, string):
-        button = self.driver.find_element_by_string(string)
-        self.touchAction.press(button, self.tap_duration).release().perform()
+        if isinstance(string, unicode) or isinstance(string, str):
+            widget = self.driver.find_element_by_string(string)
+            self.touchAction.press(widget, self.tap_duration).release().perform()
+        elif isinstance(string, MyElement):
+            self.touchAction.press(string, self.tap_duration).release().perform()
+        else:
+            logging.error("string class is: %s", string.__class__.__name__)
+            raise Exception
     
     @test_step_info    
     def tap_widget(self, string):
-        widget = self.driver.find_element_by_string(string)
-        self.touchAction.press(widget, self.tap_duration).release().perform()
+        if isinstance(string, unicode) or isinstance(string, str):
+            widget = self.driver.find_element_by_string(string)
+            self.touchAction.press(widget, self.tap_duration).release().perform()
+        elif isinstance(string, MyElement):
+            self.touchAction.press(string, self.tap_duration).release().perform()
+        else:
+            logging.error("string class is: %s", string.__class__.__name__)
+            raise Exception
+        
         
     @test_step_info
     def click_widget(self, string):
-        widget = self.driver.find_element_by_string(string)
-        widget.click()
+        if isinstance(string, unicode) or isinstance(string, str):
+            widget = self.driver.find_element_by_string(string)
+            widget.click()
+        elif isinstance(string, MyElement):
+            string.click()
+        else:
+            logging.error("string class is: %s", string.__class__.__name__)
+            raise Exception
         
     @test_step_info
     def tap_permision_widget(self, choice="accept"):

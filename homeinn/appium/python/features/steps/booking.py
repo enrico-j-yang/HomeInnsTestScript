@@ -132,7 +132,7 @@ def step_impl(context):
         
         start = context.testStep.wait_widget("com.ziipin.homeinn:id/start_use_btn", 5)
         assert start
-        context.touchAction.press(start).release().perform()
+        context.tap_widget(start)
     else:
         logging.debug("*****wait for startshow activity time out*****")
         
@@ -161,9 +161,7 @@ def step_impl(context, current_pos, widget_text):
 
 @when(u'用户点击以上的“{widget_text}”')
 def step_impl(context, widget_text):
-    context.testStep.touchAction.press(context.element).release().perform()
-    
-
+    context.testStep.tap_widget(context.element)
     
 @then(u'城市显示为“{widget_text}”')
 def step_impl(context, widget_text):
@@ -406,7 +404,7 @@ def step_impl(context, room_type, member_price):
     
 @when(u'用户点击“{member_price}”右边的“{booking}”按钮')
 def step_impl(context, member_price, booking):
-    context.testStep.touchAction.press(context.booking_widget).release().perform()
+    context.testStep.tap_widget(context.booking_widget)
 
 @when(u'用户选择“{hotel}”')
 def step_impl(context, hotel):
@@ -544,7 +542,7 @@ def step_impl(context, widget_text):
 
 @when(u'用户点击以上订单')
 def step_impl(context):
-    context.testStep.touchAction.press(context.order_widget).release().perform()
+    context.testStep.tap_widget(context.order_widget)
 
 @when(u'用户取消订单')
 def step_impl(context):
