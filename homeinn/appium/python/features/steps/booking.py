@@ -72,6 +72,23 @@ def _parse_date(checkin):
         else:
             # TODO
             raise NotImplementedError(u'中文天数未实现处理')
+    elif u"天前" in checkin:
+        count = checkin[0:checkin.index(u"天前")]
+        # if count is digit then convert to integer
+        def is_num_by_except(num):
+            try:
+                int(num)
+                return True
+            except ValueError:
+                # print "%s ValueError" % num
+                return False
+                
+        if is_num_by_except(count):
+            ret_date = today - datetime.timedelta(days=int(count))
+        # if count is chinese then process
+        else:
+            # TODO
+            raise NotImplementedError(u'中文天数未实现处理')
     elif (u"月" in checkin) and (u"号" in checkin):
         month = checkin[0:checkin.index(u"月")]
         logging.debug("month:%s", month)
@@ -410,6 +427,18 @@ def step_imp(context):
     end_p = context.testStep.has_widget("com.ziipin.homeinn:id/order_hotel_name")
     context.testStep._swipe_to_distination_half_by_half(start_p, end_p)
 
+@then(u'品牌页面向上滑动')
+def step_imp(context):
+    start_p = context.testStep.has_widget('驿居酒店')
+    end_p = context.testStep.has_widget('全部品牌')
+    context.testStep._swipe_to_distination_half_by_half(start_p, end_p)
+
+@then(u'品牌页面再次向上滑动')
+def step_imp(context):
+    start_p = context.testStep.has_widget('派柏·云酒店')
+    end_p = context.testStep.has_widget('睿柏·云酒店')
+    context.testStep._swipe_to_distination_half_by_half(start_p, end_p)
+
 @then(u'首页向下滑动')
 def step_imp(context):
     start_p = context.testStep.has_widget('立即预订')
@@ -425,7 +454,29 @@ def step_imp(context):
         #print element_text
     #else :
         #logging.error("string is wrong")
-    
+
+@when(u'用户上划屏幕查看商圈直到有“{trading_area}”')
+def step_impl(context,trading_area):
+    try:
+        trading = context.testStep.has_widget("//android.widget.TextView[@text='"+trading_area+"']")
+    except NoSuchElementException:
+        found = False
+    else:
+        found = True
+        context.trading = trading
+
+    start_p = context.testStep.has_widget("com.ziipin.homeinn:id/result_list")
+    end_p = start_p
+    context.testStep._swipe_to_distination_half_by_half(start_p, end_p, distination_side="bottom2top")
+    while (not found):
+        try:
+            trading = context.testStep.has_widget("//android.widget.TextView[@text='"+trading_area+"']")
+        except NoSuchElementException:
+            found = False
+        else:
+            found = True
+            context.trading = trading
+        context.testStep._swipe_to_distination_half_by_half(start_p, end_p, distination_side="bottom2top")   
 
 
 @when(u'用户上划屏幕查看订单详情直到有“{widget_text}”')
@@ -678,6 +729,23 @@ def step_impl(context, widget_text):
 def step_impl(context, widget_text):
     context.testStep.tap_widget(widget_text)
 
+
+@when(u'用户点击最近“{current_pos}”中的“{widget_text}”')
+def step_impl(context, current_pos, widget_text):
+    city_name = context.testStep.has_widget(widget_text,context.testStep._under(current_pos)+context.testStep._above("热门城市"))
+    context.testStep.touchAction.press(city_name).release().perform()
+
+@when(u'用户点击最近选择中的第一个')
+def step_impl(context):
+    city_name = context.testStep.has_widget("com.ziipin.homeinn:id/city_text",context.testStep._under("最近选择")+context.testStep._above("热门城市"))
+    context.testStep.touchAction.press(city_name).release().perform()
+
+@when(u'用户点击热门城市中的“{widget_text}”')
+def step_impl(context,widget_text):
+    city_name = context.testStep.has_widget(widget_text,context.testStep._under("热门城市"))
+    context.testStep.touchAction.press(city_name).release().perform()
+
+
 @when(u'用户点击民宿')
 def step_impl(context):
     context.testStep.tap_widget("//android.widget.LinearLayout[1]/android.widget.FrameLayout[1]/android.widget.LinearLayout[1]/android.widget.FrameLayout[1]/android.widget.ScrollView[1]/android.widget.LinearLayout[1]/android.widget.FrameLayout[3]/android.widget.HorizontalScrollView[1]/android.widget.LinearLayout[1]/android.widget.ImageView[1]")
@@ -721,6 +789,10 @@ def step_impl(context):
 @when(u'用户点击搜索列表中“{hotel}”')
 def step_impl(context, hotel):
     context.testStep.tap_widget(hotel)
+
+@when(u'用户点击搜索列表中深圳')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/city_text")
     
 @when(u'用户点击电子券')
 def step_impl(context):
