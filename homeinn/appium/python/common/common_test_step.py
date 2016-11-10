@@ -7,6 +7,7 @@ from types import *
 import logging
 import unittest
 import datetime
+from datetime import timedelta
 
 #from appium import webdriver
 from appium.webdriver.common.touch_action import TouchAction
@@ -382,9 +383,10 @@ class CommonTestStep(unittest.TestCase):
             if des_date.month != current_date.month:
                 # swipe up calendar certain times according to month count from today
                 if (des_date.year - current_date.year) * 12 + des_date.month - current_date.month > 1:
+                    next_month_date = current_date
                     for i in range((des_date.year - current_date.year) * 12 + des_date.month - current_date.month):
                         # find next month bar and swipe it to the top, otherwise swipe calendar from bottom to top
-                        next_month_date = current_date.replace(day=1).replace(year=int(year)).replace(month=int(month)+1)
+                        next_month_date = (next_month_date.replace(day=1) + timedelta(days=32)).replace(day=1)
                         logging.debug("next_month_date:%s", next_month_date)
                         try:
                             next_month = self.driver.find_element_by_string(str(next_month_date.year)+"年"+str(next_month_date.month)+"月")
@@ -593,6 +595,10 @@ class CommonTestStep(unittest.TestCase):
     @test_step_info
     def has_widget(self, string, posprolist=None):
         return self.driver.has_widget(string, posprolist)
+        
+    @test_step_info
+    def has_widgets(self, string, posprolist=None):
+        return self.driver.has_widgets(string, posprolist)
         
     @test_step_info
     def wait_widget(self, string, timeout=wait_duration, interval=1): 
