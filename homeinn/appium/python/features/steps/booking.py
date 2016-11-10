@@ -387,14 +387,15 @@ def step_imp(context):
 
 @then(u'品牌页面向上滑动')
 def step_imp(context):
-    start_p = context.testStep.has_widget('睿柏·云酒店')
+    start_p = context.testStep.has_widget('驿居酒店')
     end_p = context.testStep.has_widget('全部品牌')
     context.testStep._swipe_to_distination_half_by_half(start_p, end_p)
 
 @then(u'品牌页面再次向上滑动')
 def step_imp(context):
     start_p = context.testStep.has_widget('派柏·云酒店')
-    end_p = context.testStep.has_widget('素柏·云酒店')
+    end_p = context.testStep.has_widget('睿柏·云酒店')
+    context.testStep._swipe_to_distination_half_by_half(start_p, end_p)
 
 @then(u'首页向下滑动')
 def step_imp(context):
@@ -658,14 +659,16 @@ def step_impl(context, widget_text):
 def step_impl(context, widget_text):
     context.testStep.tap_widget(widget_text)
 
-@when(u'用户点击最近“{current_pos}”中的城市')
-def step_impl(context, current_pos):
-    context.testStep.tap_widget(context.testStep._under(current_pos)+context.testStep._above("热门城市"))
 
+@when(u'用户点击最近“{current_pos}”中的“{widget_text}”')
+def step_impl(context, current_pos, widget_text):
+    city_name = context.testStep.has_widget(widget_text,context.testStep._under(current_pos)+context.testStep._above("热门城市"))
+    context.testStep.touchAction.press(city_name).release().perform()
 
-#@when(u'用户点击热门“{current_pos}”中的“{widget_text}”')
-#def step_impl(context,current_pos, widget_text):
-    #context.testStep.tap_widget(widget_text,context.testStep._under(current_pos)+context.testStep._above("最近选择"))
+@when(u'用户点击热门“{current_pos}”中的“{widget_text}”')
+def step_impl(context, current_pos, widget_text):
+    city_name = context.testStep.has_widget(widget_text,context.testStep._under(current_pos))
+    context.testStep.touchAction.press(city_name).release().perform()
 
 @when(u'用户点击民宿')
 def step_impl(context):
@@ -710,6 +713,10 @@ def step_impl(context):
 @when(u'用户点击搜索列表中“{hotel}”')
 def step_impl(context, hotel):
     context.testStep.tap_widget(hotel)
+
+@when(u'用户点击搜索列表中深圳')
+def step_impl(context):
+    context.testStep.tap_widget("com.ziipin.homeinn:id/city_text")
     
 @when(u'用户点击电子券')
 def step_impl(context):
