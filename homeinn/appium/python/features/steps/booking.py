@@ -737,10 +737,16 @@ def step_impl(context, current_pos, widget_text):
     city_name = context.testStep.has_widget(widget_text,context.testStep._under(current_pos)+context.testStep._above("热门城市"))
     context.testStep.touchAction.press(city_name).release().perform()
 
-@when(u'用户点击热门“{current_pos}”中的“{widget_text}”')
-def step_impl(context, current_pos, widget_text):
-    city_name = context.testStep.has_widget(widget_text,context.testStep._under(current_pos))
+@when(u'用户点击最近选择中的第一个')
+def step_impl(context):
+    city_name = context.testStep.has_widget("com.ziipin.homeinn:id/city_text",context.testStep._under("最近选择")+context.testStep._above("热门城市"))
     context.testStep.touchAction.press(city_name).release().perform()
+
+@when(u'用户点击热门城市中的“{widget_text}”')
+def step_impl(context,widget_text):
+    city_name = context.testStep.has_widget(widget_text,context.testStep._under("热门城市"))
+    context.testStep.touchAction.press(city_name).release().perform()
+
 
 @when(u'用户点击民宿')
 def step_impl(context):
