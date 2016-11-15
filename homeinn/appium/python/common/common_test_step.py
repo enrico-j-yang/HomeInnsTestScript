@@ -418,7 +418,7 @@ class CommonTestStep(unittest.TestCase):
             destination_day = self.driver.find_element_by_string("//*[@text='"+str(des_date.year)+"年"+str(des_date.month)+"月']/parent::*//*[@text='"+str(des_date.day)+"']")
         except NoSuchElementException:
             if des_date.isoweekday() != 6 and des_date.isoweekday() != 7:
-                if des_date.day>7 and des_date.day<(des_date.replace(day=1).replace(month = des_date.month+1) - datetime.timedelta(days=1)).day-7:
+                if des_date.day>7 and des_date.day<(((des_date.replace(day=1) + timedelta(days=32)).replace(day=1) - datetime.timedelta(days=1)).day-7):
                     logging.info("It's work day")
                     destination_day = self._find_day_widget_by_nearby_date(listView, des_date, _YESTERDAY | _TOMORROW | _LASTWEEK | _NEXTWEEK)
                 elif des_date.day<=7:
@@ -440,14 +440,14 @@ class CommonTestStep(unittest.TestCase):
                     seven_day_ahead = listView.find_element_by_string("//*[@text='"+str((des_date-datetime.timedelta(days=7)).day)+"']")
                     self._swipe_to_distination(seven_day_ahead, listView)
                     '''
-                    if des_date.day==(des_date.replace(day=1).replace(month=des_date.month+1) - datetime.timedelta(days=1)).day:
+                    if des_date.day==((des_date.replace(day=1) + timedelta(days=32)).replace(day=1) - datetime.timedelta(days=1)).day:
                         logging.info("It's work day at last day")
                         destination_day = self._find_day_widget_by_nearby_date(listView, des_date, _YESTERDAY | _LASTWEEK)
                     else:
                         logging.info("It's work day in last week")
                         destination_day = self._find_day_widget_by_nearby_date(listView, des_date, _YESTERDAY | _TOMORROW | _LASTWEEK)
             elif des_date.isoweekday() == 6:
-                if des_date.day>7 and des_date.day<(des_date.replace(day=1).replace(month = des_date.month+1) - datetime.timedelta(days=1)).day-7:
+                if des_date.day>7 and des_date.day<((des_date.replace(day=1) + timedelta(days=32)).replace(day=1) - datetime.timedelta(days=1)).day-7:
                     logging.info("It's saturday")
                     destination_day = self._find_day_widget_by_nearby_date(listView, des_date, _YESTERDAY | _LASTWEEK | _NEXTWEEK)
                 elif des_date.day<=7:
@@ -472,7 +472,7 @@ class CommonTestStep(unittest.TestCase):
                     logging.info("It's saturday in last week")
                     destination_day = self._find_day_widget_by_nearby_date(listView, des_date, _YESTERDAY | _LASTWEEK)
             elif des_date.isoweekday() == 7:
-                if des_date.day>7 and des_date.day<(des_date.replace(day=1).replace(month = des_date.month+1) - datetime.timedelta(days=1)).day-7:
+                if des_date.day>7 and des_date.day<((des_date.replace(day=1) + timedelta(days=32)).replace(day=1) - datetime.timedelta(days=1)).day-7:
                     logging.info("It's sunday")
                     destination_day = self._find_day_widget_by_nearby_date(listView, des_date, _TOMORROW | _LASTWEEK | _NEXTWEEK)
                 elif des_date.day<=7:
@@ -490,7 +490,7 @@ class CommonTestStep(unittest.TestCase):
                     seven_day_ahead = listView.find_element_by_string("//*[@text='"+str((des_date-datetime.timedelta(days=7)).day)+"']")
                     self._swipe_to_distination(seven_day_ahead, listView)
                     '''
-                    if des_date.day==(des_date.replace(day=1).replace(month = des_date.month+1) - datetime.timedelta(days=1)).day:
+                    if des_date.day==((des_date.replace(day=1) + timedelta(days=32)).replace(day=1) - datetime.timedelta(days=1)).day:
                         logging.info("It's sunday at last day")
                         destination_day = self._find_day_widget_by_nearby_date(listView, des_date, _LASTWEEK)
                     else:
