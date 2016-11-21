@@ -412,7 +412,7 @@ class CommonTestStep(unittest.TestCase):
                         destination_month = self.driver.find_element_by_string(str(des_date.year)+"年"+str(des_date.month)+"月")
         else:
             # swipe up the calendar until destination month text bar reach the top of canlendar
-            logging.debug("self._swipe_to_distination_half_by_half(destination_month, listView)")
+            logging.debug("self._swipe_to_distination_half_by_half("+str(des_date.year)+"年"+str(des_date.month)+"月"+", listView)")
             self._swipe_to_distination_half_by_half(destination_month, listView, "top2top")
         try:
             destination_day = self.driver.find_element_by_string("//*[@text='"+str(des_date.year)+"年"+str(des_date.month)+"月']/parent::*//*[@text='"+str(des_date.day)+"']")
@@ -610,6 +610,13 @@ class CommonTestStep(unittest.TestCase):
     def current_window(self):
         if self.platformName == 'Android':
             return self.driver.current_activity
+
+    @test_step_info
+    def current_app(self, app):
+        if self.platformName == 'Android':
+            current_activity = os.popen("adb shell dumpsys window w | grep mFocusedApp | awk '{printf $5}'").read()
+            logging.debug("current_activity:%s", current_activity)
+            return not (current_activity.find(app)==-1)
         
     @test_step_info
     def launch_app_if_installed(self, package, activity):
