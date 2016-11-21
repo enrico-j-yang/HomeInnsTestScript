@@ -313,6 +313,8 @@ def step_impl(context):
 def step_impl(context):
     hotel_widget = context.testStep.has_widget("com.ziipin.homeinn:id/text_hotel_name")
     hotel_widget_text = hotel_widget.text
+    if len(hotel_widget_text)>8:
+        hotel_widget_text=hotel_widget_text[0:8]
     logging.debug("hotel_widget_text:%s", hotel_widget_text)
     price_widget_text = context.testStep.has_widget("com.ziipin.homeinn:id/text_hotel_price").text
     logging.debug("price_widget_text:%s", price_widget_text)
@@ -325,15 +327,17 @@ def step_impl(context):
     while (found==False):
         next_hotel_widget = context.testStep.has_widget("com.ziipin.homeinn:id/text_hotel_name", 
         context.testStep._under(hotel_widget_text))
-        logging.debug("hotel_widget_text:%s", hotel_widget_text)
         next_hotel_widget_text = next_hotel_widget.text
+        if len(next_hotel_widget_text)>8:
+            next_hotel_widget_text=next_hotel_widget_text[0:8]
+        logging.debug("next_hotel_widget_text:%s", next_hotel_widget_text)
         price_widget_text = context.testStep.has_widget("com.ziipin.homeinn:id/text_hotel_price", 
-        context.testStep._under(hotel_widget_text)).text
+        context.testStep._under(next_hotel_widget_text)).text
         logging.debug("price_widget_text:%s", price_widget_text)
         
         if price_widget_text==u'已满':
             found = False
-            context.testStep._swipe_to_distination_half_by_half(hotel_widget, hotel_widget, "bottom2top")
+            context.testStep._swipe_to_distination_half_by_half(hotel_widget, next_hotel_widget, "top2top")
             logging.debug("not found")
         else:
             found = True
@@ -788,6 +792,16 @@ def step_impl(context, widget_text):
         pass
     else:
         raise Exception    
+        
+@when(u'用户选择第一个房间')
+def step_impl(context):
+    room_widget = context.testStep.has_widget('com.ziipin.homeinn:id/room_sel_checker', context.testStep._under('自助选房'))
+    context.testStep.tap_widget(room_widget)
+
+@when(u'用户选择最后一个房间')
+def step_impl(context):
+    room_widget = context.testStep.has_widget('com.ziipin.homeinn:id/room_sel_checker', context.testStep._above('确定选房'))
+    context.testStep.tap_widget(room_widget)
     
 ######################wait_widget############################################
 @then(u'掌上如家{verb}“{widget_text}”页面')
@@ -968,11 +982,13 @@ def step_impl(context, widget_text):
 
 @when(u'用户点击“{widget_text}”按键')
 def step_impl(context, widget_text):
-    context.testStep.tap_widget(widget_text)
+    widget = context.testStep.has_widget("//android.widget.Button[contains(@text, "+widget_text+")]")
+    context.testStep.tap_widget(widget)
 
 @when(u'用户点击“{widget_text}”按钮')
 def step_impl(context, widget_text):
-    context.testStep.tap_widget(widget_text)
+    widget = context.testStep.has_widget("//android.widget.Button[contains(@text, "+widget_text+")]")
+    context.testStep.tap_widget(widget)
     
 @when(u'用户点击城市列表中的“{widget_text}”')
 def step_impl(context, widget_text):
@@ -1137,17 +1153,12 @@ def step_impl(context):
 def step_impl(context):
     if not (context.coupon == None):
         context.testStep.tap_widget('确认选择')
-        
-@when(u'用户选择第一个房间')
-def step_impl(context):
-    room_widget = context.testStep.has_widget('com.ziipin.homeinn:id/room_sel_checker', context.testStep._under('自助选房'))
-    context.testStep.tap_widget(room_widget)
     
 @when(u'用户取消选择已选房号')
 def step_impl(context):
     context.testStep.tap_widget('com.ziipin.homeinn:id/sel_room_1')
-
-@when(u'用户选择最后一个房间')
+    
+@when(u'用户点击品牌筛选')
 def step_impl(context):
-    room_widget = context.testStep.has_widget('com.ziipin.homeinn:id/room_sel_checker', context.testStep._above('确定选房'))
-    context.testStep.tap_widget(room_widget)
+    context.testStep.tap_widget('com.ziipin.homeinn:id/n_main_brand_text')
+        
