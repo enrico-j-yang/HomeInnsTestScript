@@ -57,7 +57,6 @@ def before_all(context):
     #desired_caps['udid'] = '8627d0e6' #Yan's Oppo
 
     context.testStep.init_appium(desired_caps)
-    context.touchAction = TouchAction(context.testStep.driver)
     #if not context.config.log_capture:
     #    logging.basicConfig(level=logging.DEBUG)
     

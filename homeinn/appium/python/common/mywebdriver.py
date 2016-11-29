@@ -24,6 +24,7 @@ class WebDriver(webdriver.Remote):
                  desired_capabilities=None, browser_profile=None, proxy=None, keep_alive=False):
 
         super(WebDriver, self).__init__(command_executor, desired_capabilities, browser_profile, proxy, keep_alive)
+        self.platformName = desired_capabilities['platformName']
         
 
 
@@ -275,12 +276,21 @@ class WebDriver(webdriver.Remote):
                 raise NoSuchElementException
                 
         except NoSuchElementException:
-            try:
-                logging.debug("using find_element_by_xpath with identical text property")
-                element = self.find_element_by_xpath("//*[@text='"+text+"']")
-                if element==None:
-                    raise NoSuchElementException
-            except NoSuchElementException:
+            if self.platformName == 'Android':
+                try:
+                    logging.debug("using find_element_by_xpath with identical text property")
+                    element = self.find_element_by_xpath("//*[@text='"+text+"']")
+                    if element==None:
+                        raise NoSuchElementException
+                except NoSuchElementException:
+                    try:
+                        logging.debug("using find_element_by_xpath with partial text property")
+                        element = self.find_element_by_xpath("//*[contains(@text, '"+text+"')]")
+                        if element==None:
+                            raise NoSuchElementException
+                    except NoSuchElementException:
+                        raise NoSuchElementException
+            elif self.platformName == 'iOS':
                 try:
                     logging.debug("using find_element_by_xpath with identical label property")
                     element = self.find_element_by_xpath("//*[@label='"+text+"']")
@@ -294,25 +304,20 @@ class WebDriver(webdriver.Remote):
                             raise NoSuchElementException
                     except NoSuchElementException:
                         try:
-                            logging.debug("using find_element_by_xpath with partial text property")
-                            element = self.find_element_by_xpath("//*[contains(@text, '"+text+"')]")
+                            logging.debug("using find_element_by_xpath with partial label property")
+                            element = self.find_element_by_xpath("//*[contains(@label, '"+text+"')]")
                             if element==None:
                                 raise NoSuchElementException
                         except NoSuchElementException:
                             try:
-                                logging.debug("using find_element_by_xpath with partial label property")
-                                element = self.find_element_by_xpath("//*[contains(@label, '"+text+"')]")
+                                logging.debug("using find_element_by_xpath with partial name property")
+                                element = self.find_element_by_xpath("//*[contains(@name, '"+text+"')]")
                                 if element==None:
                                     raise NoSuchElementException
                             except NoSuchElementException:
-                                try:
-                                    logging.debug("using find_element_by_xpath with partial name property")
-                                    element = self.find_element_by_xpath("//*[contains(@name, '"+text+"')]")
-                                    if element==None:
-                                        raise NoSuchElementException
-                                except NoSuchElementException:
-                                    raise NoSuchElementException
-        
+                                raise NoSuchElementException
+            else:
+                raise UnsupportedPlatformException
         return element
         
     def find_elements_by_visible_text(self, text):
@@ -322,12 +327,15 @@ class WebDriver(webdriver.Remote):
             if len(elements)==0:
                 raise NoSuchElementException
         except NoSuchElementException:
-            try:
-                logging.debug("using find_elements_by_xpath with partial text property")
-                elements = self.find_elements_by_xpath("//*[contains(@text, '"+text+"')]")
-                if len(elements)==0:
+            if self.platformName == 'Android':
+                try:
+                    logging.debug("using find_elements_by_xpath with partial text property")
+                    elements = self.find_elements_by_xpath("//*[contains(@text, '"+text+"')]")
+                    if len(elements)==0:
+                        raise NoSuchElementException
+                except NoSuchElementException:
                     raise NoSuchElementException
-            except NoSuchElementException:
+            elif self.platformName == 'iOS':
                 try:
                     logging.debug("using find_elements_by_xpath with partial label property")
                     elements = self.find_elements_by_xpath("//*[contains(@label, '"+text+"')]")
@@ -341,7 +349,8 @@ class WebDriver(webdriver.Remote):
                             raise NoSuchElementException
                     except NoSuchElementException:
                         raise NoSuchElementException
-        
+            else:
+                raise UnsupportedPlatformException
         return elements
         
     def get_position_property_of_element_by_visible_text(self, string, position):
