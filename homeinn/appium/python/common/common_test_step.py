@@ -387,7 +387,7 @@ class CommonTestStep(unittest.TestCase):
         except NoSuchElementException:
             if des_date.month != current_date.month:
                 # swipe up calendar certain times according to month count from today
-                if (des_date.year - current_date.year) * 12 + des_date.month - current_date.month > 1:
+                if (des_date.year - current_date.year) * 12 + des_date.month - current_date.month > 0:
                     next_month_date = current_date
                     for i in range((des_date.year - current_date.year) * 12 + des_date.month - current_date.month):
                         # find next month bar and swipe it to the top, otherwise swipe calendar from bottom to top
@@ -416,7 +416,7 @@ class CommonTestStep(unittest.TestCase):
                 else:
                     previous_month_date = current_date
                     logging.debug("self._swipe_to_distination_half_by_half(current_date_bar, listView, 'top2bottom')")
-                    self._swipe_to_distination_half_by_half(current_date_bar, listView, "top2bottom")
+                    self._swipe_to_distination_half_by_half(current_date_bar, listView, "bottom2bottom")
                     for i in range((current_date.year - des_date.year) * 12 + current_date.month - des_date.month):
                         # find previous month bar after swiping current month bar to the bottom
                         # swipe calendar from top to bottom 

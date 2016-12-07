@@ -182,20 +182,22 @@ class WebDriver(webdriver.Remote):
                         qualified_candidates.append(element)
                         logging.debug("add element %s", element.text)
                         logging.debug("rect_distance_dic %s", str(rect_distance_dic))
+                        logging.debug("qualified_candidates %s", str(qualified_candidates))
 
             #assert len(rect_distance_dic)==len(qualified_candidates)
             
             if len(qualified_candidates) == 0:
                 raise NoSuchElementException
             else:
+                qualified_candidates.sort()
                 logging.debug("return %s %s", str(rect_distance_dic.values()[0]), str(qualified_candidates[0]))
-                return rect_distance_dic.values()[0]
+                return qualified_candidates[0]
     
 
     def has_widgets(self, string, posprolist=None):
         logging.debug("has_widget searching string is "+string)
         if posprolist == None:
-            return self.find_element_by_string(string)
+            return self.find_elements_by_string(string)
         else:
             logging.debug("posprolist %d", len(posprolist))
             candidates = self.find_elements_by_string(string)
@@ -221,14 +223,16 @@ class WebDriver(webdriver.Remote):
                         qualified_candidates.append(element)
                         logging.debug("add element %s", element.text)
                         logging.debug("rect_distance_dic %s", str(rect_distance_dic))
+                        logging.debug("qualified_candidates %s", str(qualified_candidates))
 
             #assert len(rect_distance_dic)==len(qualified_candidates)
             
             if len(qualified_candidates) == 0:
                 raise NoSuchElementException
             else:
+                qualified_candidates.sort()
                 logging.debug("return %s %s", str(rect_distance_dic.values()), str(qualified_candidates))
-                return rect_distance_dic.values()
+                return qualified_candidates
                 
     def find_element_by_string(self, string):
         logging.debug("find_element_by_string: "+string)

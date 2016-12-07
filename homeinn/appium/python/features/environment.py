@@ -83,4 +83,5 @@ def after_scenario(context, scenario):
     screenshotname = "./" + scenario.name + ".png"
     sleep(1)
     context.testStep.driver.get_screenshot_as_file(screenshotname)
-    #context.testStep.driver.close_app()
+    if (scenario.status=='failed'):
+        context.testStep.driver.close_app()
