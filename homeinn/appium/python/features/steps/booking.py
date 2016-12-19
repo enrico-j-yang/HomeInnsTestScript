@@ -1341,10 +1341,6 @@ def step_impl(context):
 def step_impl(context):
     if not (context.coupon == None):
         context.testStep.wait_widget('选择优惠券')
-
-@then(u'掌上如家出现自助服务界面')
-def step_impl(context):
-    context.testStep.wait_widget('自助服务', 5)
     
 @then(u'掌上如家有预订酒店名')
 def step_impl(context):
