@@ -14,6 +14,8 @@ from appium.webdriver.common.touch_action import TouchAction
 from appium.webdriver.common.multi_action import MultiAction
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import TimeoutException
+
 
 from PIL import Image
 
@@ -619,9 +621,25 @@ class CommonTestStep(unittest.TestCase):
         
     @test_step_info
     def wait_widget(self, string, timeout=wait_duration, interval=1): 
-        wait = WebDriverWait(self.driver, timeout, interval)
-        wait.until(lambda dr: dr.find_element_by_string(string).is_displayed())
-
+        try:
+            wait = WebDriverWait(self.driver, timeout, interval)
+            wait.until(lambda dr: dr.find_element_by_string(string).is_displayed())
+        except TimeoutException:
+            try:
+                self.driver.has_widget('抱歉，暂无相关结果')
+            except NoSuchElementException:
+                try:
+                    self.driver.has_widget('您的网络好像不太给力，请稍后再试')
+                    retry_widget = self.driver.has_widget('点击重试')
+                except:
+                    raise TimeoutException
+                else:
+                    self.tap_widget(retry_widget)
+                    wait.until(lambda dr: dr.find_element_by_string(string).is_displayed())
+            else:
+                logging.error("No result, may be network error.")
+                raise TimeoutException
+            
     @test_step_info
     def current_window(self):
         if self.platformName == 'Android':

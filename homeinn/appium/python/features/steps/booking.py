@@ -17,6 +17,7 @@ from appium import webdriver
 from appium.webdriver.common.touch_action import TouchAction
 from appium.webdriver.common.multi_action import MultiAction 
 from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import TimeoutException
 
 
 # Returns abs path relative to this file and not cwd
@@ -1331,7 +1332,14 @@ def step_impl(context):
 
 @then(u'掌上如家有房型列表')
 def step_impl(context):
-    context.testStep.wait_widget("com.ziipin.homeinn:id/room_info_layout")
+    try:
+        context.testStep.wait_widget("com.ziipin.homeinn:id/room_info_layout")
+    except TimeoutException:
+        context.swipe_widget_by_direction(context.testStep, "up")
+        self.driver.has_widget('您的网络好像不太给力，请稍后再试')
+        retry_widget = self.driver.has_widget('点击重试')
+        self.tap_widget(retry_widget)
+        context.testStep.wait_widget("com.ziipin.homeinn:id/room_info_layout")
     
 @then(u'掌上如家有收藏酒店列表')
 def step_impl(context):
