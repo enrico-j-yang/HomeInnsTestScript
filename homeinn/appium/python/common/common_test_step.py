@@ -14,6 +14,8 @@ from appium.webdriver.common.touch_action import TouchAction
 from appium.webdriver.common.multi_action import MultiAction
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import TimeoutException
+
 
 from PIL import Image
 
@@ -557,7 +559,8 @@ class CommonTestStep(unittest.TestCase):
     def tap_button_if_exist(self, string, wait_duration=3):
         try:
             button = self.driver.find_element_by_string(string, wait_duration)        
-            self.touchAction.press(button, self.tap_duration).release().perform()
+            self.touchAction.tap(button).perform()
+            self.last_tapped_widget = button
             logging.debug("%s button exists", string)
         except:
             logging.debug("%s button not exist", string)
@@ -618,10 +621,36 @@ class CommonTestStep(unittest.TestCase):
         return self.driver.has_widgets(string, posprolist)
         
     @test_step_info
-    def wait_widget(self, string, timeout=wait_duration, interval=1): 
-        wait = WebDriverWait(self.driver, timeout, interval)
-        wait.until(lambda dr: dr.find_element_by_string(string).is_displayed())
-
+    def wait_widget(self, string, timeout=wait_duration, interval=1, retry=False): 
+        if retry:
+            try:
+                wait = WebDriverWait(self.driver, timeout, interval)
+                wait.until(lambda dr: dr.find_element_by_string(string).is_displayed())
+            except TimeoutException:
+                try:
+                    self.driver.has_widget('抱歉，暂无相关结果')
+                except NoSuchElementException:
+                    try:
+                        self.driver.has_widget('您的网络好像不太给力，请稍后再试')
+                    except:
+                        raise TimeoutException
+                    else:
+                        try:
+                            retry_widget = self.driver.has_widget('点击重试')
+                        except NoSuchElementException:
+                            self.tap_widget(self.last_tapped_widget)
+                        else:
+                            self.tap_widget(retry_widget)
+                    
+                        wait.until(lambda dr: dr.find_element_by_string(string).is_displayed())
+                else:
+                    logging.error("No result, may be network error.")
+                    raise TimeoutException
+            
+        else:
+            wait = WebDriverWait(self.driver, timeout, interval)
+            wait.until(lambda dr: dr.find_element_by_string(string).is_displayed())
+            
     @test_step_info
     def current_window(self):
         if self.platformName == 'Android':
@@ -709,9 +738,11 @@ class CommonTestStep(unittest.TestCase):
     def tap_button(self, string):
         if isinstance(string, unicode) or isinstance(string, str):
             widget = self.driver.find_element_by_string(string)
-            self.touchAction.press(widget, self.tap_duration).release().perform()
+            self.touchAction.tap(widget).perform()
+            self.last_tapped_widget = widget
         elif isinstance(string, MyElement):
-            self.touchAction.press(string, self.tap_duration).release().perform()
+            self.touchAction.tap(string).perform()
+            self.last_tapped_widget = string
         else:
             logging.error("string class is: %s", string.__class__.__name__)
             raise Exception
@@ -720,9 +751,11 @@ class CommonTestStep(unittest.TestCase):
     def tap_widget(self, string):
         if isinstance(string, unicode) or isinstance(string, str):
             widget = self.driver.find_element_by_string(string)
-            self.touchAction.press(widget, self.tap_duration).release().perform()
+            self.touchAction.tap(widget).perform()
+            self.last_tapped_widget = widget
         elif isinstance(string, MyElement):
-            self.touchAction.press(string, self.tap_duration).release().perform()
+            self.touchAction.tap(string).perform()
+            self.last_tapped_widget = string
         else:
             logging.error("string class is: %s", string.__class__.__name__)
             raise Exception
@@ -733,8 +766,10 @@ class CommonTestStep(unittest.TestCase):
         if isinstance(string, unicode) or isinstance(string, str):
             widget = self.driver.find_element_by_string(string)
             widget.click()
+            self.last_tapped_widget = widget
         elif isinstance(string, MyElement):
             string.click()
+            self.last_tapped_widget = string
         else:
             logging.error("string class is: %s", string.__class__.__name__)
             raise Exception
@@ -782,7 +817,8 @@ class CommonTestStep(unittest.TestCase):
             raise UnknownStringException 
             
         self.assertTrue(button)
-        self.touchAction.press(button, self.tap_duration).release().perform()
+        self.touchAction.tap(button).perform()
+        self.last_tapped_widget = button
 
     @test_step_info
     def long_tap_widget(self, string, x=0, y=0, duration=1000):
@@ -803,46 +839,7 @@ class CommonTestStep(unittest.TestCase):
             duration = self.long_tap_duration
             
         self.touchAction.long_press(widget, x, y, duration).release().perform()
-        
-    @test_step_info
-    def precise_tap_widget(self, string, x=0, y=0, duration=200, allowOutOfBound=False):
-        widget = self.driver.find_element_by_string(string)
-        lx = widget.location.get('x')
-        ly = widget.location.get('y')
-
-        logging.debug("location x:%s location y:%s", lx, ly)
-        size = widget.size
-        logging.debug("size %s %s", size["width"], size["height"])
-        if x=="middle":
-            x = size["width"] / 2
-        
-        if y=="middle":
-            y = size["height"]/ 2
-        
-        if x==0 and y==0:
-            x = size["width"] / 2
-            y = size["height"]/ 2
-        
-        
-        window_size = self.driver.get_window_size()
-        logging.debug("window size %s %s", window_size["width"], window_size["height"])
-
-        try:
-            if (x>size['width'] or x<0
-            or y>size['height'] or y<0
-            or x+lx>window_size['width']
-            or y+ly>window_size['height']):
-                logging.error("Out of bound exception")
-                raise OutOfBoundException
-        except OutOfBoundException:
-            if not allowOutOfBound:
-                logging.error("Out of bound exception")
-                raise OutOfBoundException
-
-        if duration == 200:
-            duration = self.tap_duration
-            
-        self.touchAction.press(widget, x+lx, y+ly).wait(duration).release().perform()
+        self.last_tapped_widget = widget
         
     @test_step_info
     def tap_widget_if_image_alike(self, string, ref_image_name, after_image_name=None):
@@ -852,7 +849,8 @@ class CommonTestStep(unittest.TestCase):
         added_file_name = self.__add_resolution_to_file_name(ref_image_name, elementImageSize)
         
         if self.__pil_image_similarity(added_file_name, elementImageName) == 0:
-            self.touchAction.press(star_btn, self.tap_duration).release().perform()
+            self.touchAction.tap(star_btn).perform()
+            self.last_tapped_widget = star_btn
         else:
             logging.debug("image not alike")
             self.assertTrue(0)
@@ -949,7 +947,37 @@ class CommonTestStep(unittest.TestCase):
         else:
             logging.error("Wrong direction %s", str(direction))
             raise WrongDirectionException
+        
+    @test_step_info        
+    def swipe_by_direction(self, direction, duration=500):
+        #if self.platformName == 'Android':
+        window_size = self.driver.get_window_size()
+        logging.debug("window size %s %s", window_size["width"], window_size["height"])
+        lx = window_size["width"]
+        ly = window_size["height"]
+
+        if duration == 500:
+            duration = self.swipe_duration
+            
+        if direction == "up":
+            self.driver.swipe(lx/2, ly-1, lx/2, 1, duration)
+        elif direction == "down":
+            self.driver.swipe(lx/2, 1, lx/2, ly-1, duration)
+        elif direction == "left":
+            self.driver.swipe(lx-1, ly/2, 1, ly/2, duration)
+        elif direction == "right":
+            self.driver.swipe(1, ly/2, lx-1, ly/2, duration)
+        else:
+            logging.error("Wrong direction %s", str(direction))
+            raise WrongDirectionException
     
+    @test_step_info
+    def swipe_up_and_retry(self, tips, button_string):
+        self.swipe_by_direction("up")
+        self.driver.has_widget(tips)
+        retry_widget = self.driver.has_widget(button_string)
+        self.tap_widget(retry_widget)
+        
     @test_step_info
     def pinch_widget(self, string, percentage=200, steps=50):
         widget = self.driver.find_element_by_string(string)
