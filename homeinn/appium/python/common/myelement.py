@@ -37,7 +37,7 @@ class PositionProperty(object):
         return self._pos
 
 class WebElement(AppiumWebElement):
-    wait_duration = 30
+    wait_duration = 60
     _porsition_property = PositionProperty()
     
     @property

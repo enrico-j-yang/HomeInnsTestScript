@@ -7,17 +7,21 @@ from types import *
 import logging
 import unittest
 import datetime
+from datetime import timedelta
 
 #from appium import webdriver
 from appium.webdriver.common.touch_action import TouchAction
 from appium.webdriver.common.multi_action import MultiAction
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import TimeoutException
+
 
 from PIL import Image
 
 from mywebdriver import WebDriver
 from myelement import PositionProperty
+from myelement import WebElement as MyElement
 
 # Returns abs path relative to this file and not cwd
 PATH = lambda p: os.path.abspath(
@@ -349,26 +353,30 @@ class CommonTestStep(unittest.TestCase):
         elif end_y == window_max_y:
             end_y = window_max_y - 1
         
-        if one_step == False:
-            logging.debug("swipe:%d, %d", start_y, end_y)
-            while (abs(start_y-end_y)>100):
-                self.driver.swipe(start_x, start_y, start_x, (start_y+end_y)/2)
-                start_y = (start_y+end_y)/2
+        if not start_y==end_y:
+            if one_step == False:
+                while (abs(start_y-end_y)>100):
+                    logging.debug("swipe:%d, %d", start_y, end_y)
+                    self.driver.swipe(start_x, start_y, start_x, (start_y+end_y)/2)
+                    start_y = (start_y+end_y)/2
                 
             
-        logging.debug("final swipe:%d, %d", start_y, end_y)
-        self.driver.swipe(start_x, start_y, start_x, end_y)
+            logging.debug("final swipe:%d, %d", start_y, end_y)
+            self.driver.swipe(start_x, start_y, start_x, end_y)
+            
+            return True
+        else:        
+            return False
                 
-        return False
-        
     @test_step_info
     def tap_date_in_calendar(self, des_date):
         logging.debug("des_date:%s", des_date)
         logging.debug("des_date.isoweekday():%d", des_date.isoweekday())
     
-        current_date_bar = self.driver.find_element_by_string("//*[contains(@text, '年')]")
-        year = current_date_bar.text[0:current_date_bar.text.index(u"年")]
-        month = current_date_bar.text[current_date_bar.text.index(u"年")+1:current_date_bar.text.index(u"月")]
+        current_date_bar = self.driver.find_element_by_string('年')
+        current_date_bar_text = current_date_bar.text
+        year = current_date_bar_text[0:current_date_bar_text.index(u"年")]
+        month = current_date_bar_text[current_date_bar_text.index(u"年")+1:current_date_bar_text.index(u"月")]
         current_date = des_date.replace(day=1).replace(year=int(year)).replace(month=int(month))
         logging.debug("current_date:%s", current_date)
     
@@ -376,171 +384,137 @@ class CommonTestStep(unittest.TestCase):
         listView = self.driver.find_element_by_string("com.ziipin.homeinn:id/date_list")
         
         try:
-            destination_month = self.driver.find_element_by_string("//*[@text='"+str(des_date.year)+"年"+str(des_date.month)+"月']")
+            destination_month = self.driver.find_element_by_string(str(des_date.year)+"年"+str(des_date.month)+"月")
             
         except NoSuchElementException:
             if des_date.month != current_date.month:
                 # swipe up calendar certain times according to month count from today
-                if des_date.month > current_date.month:
-                    for i in range((des_date.month-current_date.month)):
-                        # find last day and swipe it to the top
-                        logging.info("find last day and swipe it to the top")
-                        current_month_last_day = (current_date.replace(day=1).replace(month = current_date.month+1) - datetime.timedelta(days=1))
-
-                        logging.debug("current_month_last_day:%s", current_month_last_day)
-                        logging.debug("current_month_last_day.isoweekday():%s", current_month_last_day.isoweekday())
+                if (des_date.year - current_date.year) * 12 + des_date.month - current_date.month > 0:
+                    next_month_date = current_date
+                    for i in range((des_date.year - current_date.year) * 12 + des_date.month - current_date.month):
+                        # find next month bar and swipe it to the top, otherwise swipe calendar from bottom to top
+                        next_month_date = (next_month_date.replace(day=1) + timedelta(days=32)).replace(day=1)
+                        logging.debug("next_month_date:%s", next_month_date)
                         try:
-                            current_month_last_day_widget = listView.find_element_by_string("//*[@text='"+str(current_month_last_day.day)+"']")
+                            next_month = self.driver.find_element_by_string(\
+                            str(next_month_date.year)+"年"+str(next_month_date.month)+"月")
                         except NoSuchElementException:
-                            if current_month_last_day.isoweekday() != 7:
-                                current_month_last_day_widget = self._find_day_widget_by_nearby_date(listView, current_month_last_day, _YESTERDAY | _LASTWEEK)
-                            else:
-                                current_month_last_day_widget = self._find_day_widget_by_nearby_date(listView, current_month_last_day, _LASTWEEK)
-
-                        logging.debug("self._swipe_to_distination_half_by_half(current_month_last_day_widget, listView)")
-                        self._swipe_to_distination_half_by_half(current_month_last_day_widget, listView)
-                        '''''
-                        # final swipe
-                        try:
-                            current_month_last_day_widget = listView.find_element_by_string("//*[@text='"+str(current_month_last_day.day)+"']")
-                        except NoSuchElementException:
-                            if current_month_last_day.isoweekday() != 7:
-                                current_month_last_day_widget = self._find_day_widget_by_nearby_date(listView, current_month_last_day, _YESTERDAY | _LASTWEEK)
-                            else:
-                                current_month_last_day_widget = self._find_day_widget_by_nearby_date(listView, current_month_last_day, _LASTWEEK)
-
-                        self._swipe_to_distination(current_month_last_day_widget, listView)
-                        '''
-                        # then find current dat bar again and swipe it to the top
-                        logging.info("then find current dat bar again and swipe it to the top")
-                        current_date_bar = self.driver.find_element_by_string("//*[contains(@text, '年')]")
-                        year = current_date_bar.text[0:current_date_bar.text.index(u"年")]
-                        month = current_date_bar.text[current_date_bar.text.index(u"年")+1:current_date_bar.text.index(u"月")]
-                        current_date = des_date.replace(year=int(year)).replace(month=int(month))
-                        logging.debug("current_date:%s", current_date)
+                            logging.debug(\
+                            "self._swipe_to_distination_half_by_half(listView, listView, 'bottom2top')")
+                            self._swipe_to_distination_half_by_half(listView, listView, "bottom2top")
+                        else:
+                            self.driver.drag_and_drop(next_month, current_date_bar)
+                            next_month = self.driver.find_element_by_string(\
+                            str(next_month_date.year)+"年"+str(next_month_date.month)+"月")
+                            logging.debug(\
+                            "self._swipe_to_distination_half_by_half(next_month, listView, 'top2top')")
+                            self._swipe_to_distination_half_by_half(next_month, listView, "top2top")
                     
-                        self._swipe_to_distination_half_by_half(current_date_bar, listView)
-                        #self.swipe_widget_by_direction("com.ziipin.homeinn:id/date_list", "up")
-                    
-                    destination_month = self.driver.find_element_by_string("//*[@text='"+str(des_date.year)+"年"+str(des_date.month)+"月']")
-                    
+                    destination_month = self.driver.find_element_by_string(\
+                    str(des_date.year)+"年"+str(des_date.month)+"月")
+                    logging.debug("self._swipe_to_distination_half_by_half(destination_month, listView, 'top2top')")
+                    self._swipe_to_distination_half_by_half(destination_month, listView, "top2top")
                         
                 else:
-                    for i in range((current_date.month-des_date.month)):
-                        # find current dat bar and swipe it to the bottom
-                        logging.info("find current dat bar and swipe it to the bottom")
-                        current_date_bar = self.driver.find_element_by_string("//*[contains(@text, '年')]")
-                        year = current_date_bar.text[0:current_date_bar.text.index(u"年")]
-                        month = current_date_bar.text[current_date_bar.text.index(u"年")+1:current_date_bar.text.index(u"月")]
-                        current_date = des_date.replace(year=int(year)).replace(month=int(month))
-                        logging.debug("current_date:%s", current_date)
-
-                        logging.debug("self._swipe_to_distination_half_by_half(current_date_bar, listView, 'bottom')")
-                        self._swipe_to_distination_half_by_half(current_date_bar, listView, "bottom")
-                        '''''
-                        # final swipe
-                        current_date_bar = self.driver.find_element_by_string("//*[contains(@text, '年')]")
-                        self._swipe_to_distination(current_date_bar, listView)
-                        '''
-                        #self.swipe_widget_by_direction("com.ziipin.homeinn:id/date_list", "down")
-                    try:
-                        destination_month = self.driver.find_element_by_string("//*[@text='"+str(des_date.year)+"年"+str(des_date.month)+"月']")
-                    except NoSuchElementException:
-                        self.driver.swipe(listView.size['width']/2, listView.location.get('y'),
-                                           listView.size['width']/2, listView.location.get('y')+50)
-                        destination_month = self.driver.find_element_by_string("//*[@text='"+str(des_date.year)+"年"+str(des_date.month)+"月']")
+                    previous_month_date = current_date
+                    logging.debug("self._swipe_to_distination_half_by_half(current_date_bar, listView, 'top2bottom')")
+                    self._swipe_to_distination_half_by_half(current_date_bar, listView, "bottom2bottom")
+                    for i in range((current_date.year - des_date.year) * 12 + current_date.month - des_date.month):
+                        # find previous month bar after swiping current month bar to the bottom
+                        # swipe calendar from top to bottom 
+                        previous_month_date = (previous_month_date.replace(day=1) - timedelta(days=1)).replace(day=1)
+                        logging.debug("previous_month_date:%s", previous_month_date)
+                        try:
+                            previous_month = self.driver.find_element_by_string(\
+                            str(previous_month_date.year)+"年"+str(previous_month_date.month)+"月")
+                        except NoSuchElementException:
+                            self._swipe_to_distination_half_by_half(listView, listView, "top2bottom")
+                            logging.debug("self._swipe_to_distination_half_by_half(listView, listView, 'top2bottom')")
+                        else:
+                            self.driver.drag_and_drop(previous_month, current_date_bar)
+                            previous_month = self.driver.find_element_by_string(\
+                            str(previous_month_date.year)+"年"+str(previous_month_date.month)+"月")
+                            logging.debug(\
+                            "self._swipe_to_distination_half_by_half(previous_month, listView, 'top2top')")
+                            self._swipe_to_distination_half_by_half(previous_month, listView, "top2top")
         else:
             # swipe up the calendar until destination month text bar reach the top of canlendar
-            logging.debug("self._swipe_to_distination_half_by_half(destination_month, listView)")
-            self._swipe_to_distination_half_by_half(destination_month, listView)
-            '''''
-            # final swipe
-            destination_month = self.driver.find_element_by_string("//*[@text='"+str(des_date.year)+"年"+str(des_date.month)+"月']")
-            self._swipe_to_distination(destination_month, listView)
-            '''
+            logging.debug("self.driver.drag_and_drop(destination_month, current_date_bar)")
+            self.driver.drag_and_drop(destination_month, current_date_bar)
+            logging.debug("self._swipe_to_distination_half_by_half(destination_month, listView, 'top2top')")
+            destination_month = self.driver.find_element_by_string(str(des_date.year)+"年"+str(des_date.month)+"月")
+            self._swipe_to_distination_half_by_half(destination_month, listView, "top2top")
+            
         try:
-            destination_day = self.driver.find_element_by_string("//*[@text='"+str(des_date.year)+"年"+str(des_date.month)+"月']/parent::*//*[@text='"+str(des_date.day)+"']")
+            destination_day = self.driver.find_element_by_string(\
+            "//*[@text='"+str(des_date.year)+"年"+str(des_date.month)+"月']\
+            /parent::*//*[@text='"+str(des_date.day)+"']")
         except NoSuchElementException:
             if des_date.isoweekday() != 6 and des_date.isoweekday() != 7:
-                if des_date.day>7 and des_date.day<(des_date.replace(day=1).replace(month = des_date.month+1) - datetime.timedelta(days=1)).day-7:
+                if des_date.day>7\
+                and des_date.day<(((des_date.replace(day=1) + timedelta(days=32)).replace(day=1)\
+                 - datetime.timedelta(days=1)).day-7):
                     logging.info("It's work day")
-                    destination_day = self._find_day_widget_by_nearby_date(listView, des_date, _YESTERDAY | _TOMORROW | _LASTWEEK | _NEXTWEEK)
+                    destination_day = self._find_day_widget_by_nearby_date(\
+                    listView, des_date, _YESTERDAY | _TOMORROW | _LASTWEEK | _NEXTWEEK)
                 elif des_date.day<=7:
                     if des_date.day==1:
                         logging.info("It's work day at 1st")
-                        destination_day = self._find_day_widget_by_nearby_date(listView, des_date, _TOMORROW | _NEXTWEEK)
+                        destination_day = self._find_day_widget_by_nearby_date(\
+                        listView, des_date, _TOMORROW | _NEXTWEEK)
                     else:
                         logging.info("It's work day in first week")
-                        destination_day = self._find_day_widget_by_nearby_date(listView, des_date, _YESTERDAY | _TOMORROW | _NEXTWEEK)
+                        destination_day = self._find_day_widget_by_nearby_date(\
+                        listView, des_date, _YESTERDAY | _TOMORROW | _NEXTWEEK)
                 else:
-                    '''''
-                    # swipe up the calendar until 7 day ahead destination day text bar reach the top of calendar
-                    seven_day_ahead = listView.find_element_by_string("//*[@text='"+str((des_date-datetime.timedelta(days=7)).day)+"']")
-
-                    logging.debug("self._swipe_to_distination_half_by_half(seven_day_ahead, listView)")
-                    self._swipe_to_distination_half_by_half(seven_day_ahead, listView)
-                    
-                    # final swipe
-                    seven_day_ahead = listView.find_element_by_string("//*[@text='"+str((des_date-datetime.timedelta(days=7)).day)+"']")
-                    self._swipe_to_distination(seven_day_ahead, listView)
-                    '''
-                    if des_date.day==(des_date.replace(day=1).replace(month=des_date.month+1) - datetime.timedelta(days=1)).day:
+                    if des_date.day==((des_date.replace(day=1) + timedelta(days=32)).replace(day=1)\
+                    - datetime.timedelta(days=1)).day:
                         logging.info("It's work day at last day")
-                        destination_day = self._find_day_widget_by_nearby_date(listView, des_date, _YESTERDAY | _LASTWEEK)
+                        destination_day = self._find_day_widget_by_nearby_date(\
+                        listView, des_date, _YESTERDAY | _LASTWEEK)
                     else:
                         logging.info("It's work day in last week")
-                        destination_day = self._find_day_widget_by_nearby_date(listView, des_date, _YESTERDAY | _TOMORROW | _LASTWEEK)
+                        destination_day = self._find_day_widget_by_nearby_date(\
+                        listView, des_date, _YESTERDAY | _TOMORROW | _LASTWEEK)
             elif des_date.isoweekday() == 6:
-                if des_date.day>7 and des_date.day<(des_date.replace(day=1).replace(month = des_date.month+1) - datetime.timedelta(days=1)).day-7:
+                if des_date.day>7 and des_date.day<((des_date.replace(day=1) + timedelta(days=32)).replace(day=1)\
+                 - datetime.timedelta(days=1)).day-7:
                     logging.info("It's saturday")
-                    destination_day = self._find_day_widget_by_nearby_date(listView, des_date, _YESTERDAY | _LASTWEEK | _NEXTWEEK)
+                    destination_day = self._find_day_widget_by_nearby_date(\
+                    listView, des_date, _YESTERDAY | _LASTWEEK | _NEXTWEEK)
                 elif des_date.day<=7:
                     if des_date.day==1:
                         logging.info("It's saturday on 1st")
-                        destination_day = self._find_day_widget_by_nearby_date(listView, des_date, _NEXTWEEK)
+                        destination_day = self._find_day_widget_by_nearby_date(\
+                        listView, des_date, _NEXTWEEK)
                     else:
                         logging.info("It's saturday in first week")
-                        destination_day = self._find_day_widget_by_nearby_date(listView, des_date, _YESTERDAY | _NEXTWEEK)
+                        destination_day = self._find_day_widget_by_nearby_date(\
+                        listView, des_date, _YESTERDAY | _NEXTWEEK)
                 else:
-                    '''''
-                    # swipe up the calendar until 7 day ahead destination day text bar reach the top of calendar
-                    seven_day_ahead = listView.find_element_by_string("//*[@text='"+str((des_date-datetime.timedelta(days=7)).day)+"']")
-
-                    logging.debug("self._swipe_to_distination_half_by_half(seven_day_ahead, listView)")
-                    self._swipe_to_distination_half_by_half(seven_day_ahead, listView)
-                    
-                    # final swipe
-                    seven_day_ahead = listView.find_element_by_string("//*[@text='"+str((des_date-datetime.timedelta(days=7)).day)+"']")
-                    self._swipe_to_distination(seven_day_ahead, listView)
-                    '''
                     logging.info("It's saturday in last week")
-                    destination_day = self._find_day_widget_by_nearby_date(listView, des_date, _YESTERDAY | _LASTWEEK)
+                    destination_day = self._find_day_widget_by_nearby_date(\
+                    listView, des_date, _YESTERDAY | _LASTWEEK)
             elif des_date.isoweekday() == 7:
-                if des_date.day>7 and des_date.day<(des_date.replace(day=1).replace(month = des_date.month+1) - datetime.timedelta(days=1)).day-7:
+                if des_date.day>7 and des_date.day<((des_date.replace(day=1) + timedelta(days=32)).replace(day=1)\
+                 - datetime.timedelta(days=1)).day-7:
                     logging.info("It's sunday")
-                    destination_day = self._find_day_widget_by_nearby_date(listView, des_date, _TOMORROW | _LASTWEEK | _NEXTWEEK)
+                    destination_day = self._find_day_widget_by_nearby_date(\
+                    listView, des_date, _TOMORROW | _LASTWEEK | _NEXTWEEK)
                 elif des_date.day<=7:
                     logging.info("It's sunday in first week")
-                    destination_day = self._find_day_widget_by_nearby_date(listView, des_date, _TOMORROW | _NEXTWEEK)
+                    destination_day = self._find_day_widget_by_nearby_date(\
+                    listView, des_date, _TOMORROW | _NEXTWEEK)
                 else:
-                    '''''
-                    # swipe up the calendar until 7 day ahead destination day text bar reach the top of calendar
-                    seven_day_ahead = listView.find_element_by_string("//*[@text='"+str((des_date-datetime.timedelta(days=7)).day)+"']")
-
-                    logging.debug("self._swipe_to_distination_half_by_half(seven_day_ahead, listView)")
-                    self._swipe_to_distination_half_by_half(seven_day_ahead, listView)
-                    
-                    # final swipe
-                    seven_day_ahead = listView.find_element_by_string("//*[@text='"+str((des_date-datetime.timedelta(days=7)).day)+"']")
-                    self._swipe_to_distination(seven_day_ahead, listView)
-                    '''
-                    if des_date.day==(des_date.replace(day=1).replace(month = des_date.month+1) - datetime.timedelta(days=1)).day:
+                    if des_date.day==((des_date.replace(day=1) + timedelta(days=32)).replace(day=1)\
+                     - datetime.timedelta(days=1)).day:
                         logging.info("It's sunday at last day")
                         destination_day = self._find_day_widget_by_nearby_date(listView, des_date, _LASTWEEK)
                     else:
                         logging.info("It's sunday in last week")
-                        destination_day = self._find_day_widget_by_nearby_date(listView, des_date, _TOMORROW | _LASTWEEK)
-                 
+                        destination_day = self._find_day_widget_by_nearby_date(\
+                        listView, des_date, _TOMORROW | _LASTWEEK)
+            
         self.touchAction.press(destination_day).release().perform()
     
     def take_screen_shot_at_every_step(self, case_function_name):
@@ -582,10 +556,11 @@ class CommonTestStep(unittest.TestCase):
             self.driver.get_screenshot_as_file(screenshotname)
         self.driver.quit()
     
-    def tap_button_if_exist(self, string):
+    def tap_button_if_exist(self, string, wait_duration=3):
         try:
-            button = self.driver.find_element_by_string(string)        
-            self.touchAction.press(button, self.tap_duration).release().perform()
+            button = self.driver.find_element_by_string(string, wait_duration)        
+            self.touchAction.tap(button).perform()
+            self.last_tapped_widget = button
             logging.debug("%s button exists", string)
         except:
             logging.debug("%s button not exist", string)
@@ -642,14 +617,51 @@ class CommonTestStep(unittest.TestCase):
         return self.driver.has_widget(string, posprolist)
         
     @test_step_info
-    def wait_widget(self, string, timeout=wait_duration, interval=1): 
-        wait = WebDriverWait(self.driver, timeout, interval)
-        wait.until(lambda dr: dr.find_element_by_string(string).is_displayed())
-
+    def has_widgets(self, string, posprolist=None):
+        return self.driver.has_widgets(string, posprolist)
+        
+    @test_step_info
+    def wait_widget(self, string, timeout=wait_duration, interval=1, retry=False): 
+        if retry:
+            try:
+                wait = WebDriverWait(self.driver, timeout, interval)
+                wait.until(lambda dr: dr.find_element_by_string(string).is_displayed())
+            except TimeoutException:
+                try:
+                    self.driver.has_widget('抱歉，暂无相关结果')
+                except NoSuchElementException:
+                    try:
+                        self.driver.has_widget('您的网络好像不太给力，请稍后再试')
+                    except:
+                        raise TimeoutException
+                    else:
+                        try:
+                            retry_widget = self.driver.has_widget('点击重试')
+                        except NoSuchElementException:
+                            self.tap_widget(self.last_tapped_widget)
+                        else:
+                            self.tap_widget(retry_widget)
+                    
+                        wait.until(lambda dr: dr.find_element_by_string(string).is_displayed())
+                else:
+                    logging.error("No result, may be network error.")
+                    raise TimeoutException
+            
+        else:
+            wait = WebDriverWait(self.driver, timeout, interval)
+            wait.until(lambda dr: dr.find_element_by_string(string).is_displayed())
+            
     @test_step_info
     def current_window(self):
         if self.platformName == 'Android':
             return self.driver.current_activity
+
+    @test_step_info
+    def current_app(self, app):
+        if self.platformName == 'Android':
+            current_activity = os.popen("adb shell dumpsys window w | grep mFocusedApp | awk '{printf $5}'").read()
+            logging.debug("current_activity:%s", current_activity)
+            return not (current_activity.find(app)==-1)
         
     @test_step_info
     def launch_app_if_installed(self, package, activity):
@@ -724,18 +736,43 @@ class CommonTestStep(unittest.TestCase):
     
     @test_step_info    
     def tap_button(self, string):
-        button = self.driver.find_element_by_string(string)
-        self.touchAction.press(button, self.tap_duration).release().perform()
+        if isinstance(string, unicode) or isinstance(string, str):
+            widget = self.driver.find_element_by_string(string)
+            self.touchAction.tap(widget).perform()
+            self.last_tapped_widget = widget
+        elif isinstance(string, MyElement):
+            self.touchAction.tap(string).perform()
+            self.last_tapped_widget = string
+        else:
+            logging.error("string class is: %s", string.__class__.__name__)
+            raise Exception
     
     @test_step_info    
     def tap_widget(self, string):
-        widget = self.driver.find_element_by_string(string)
-        self.touchAction.press(widget, self.tap_duration).release().perform()
+        if isinstance(string, unicode) or isinstance(string, str):
+            widget = self.driver.find_element_by_string(string)
+            self.touchAction.tap(widget).perform()
+            self.last_tapped_widget = widget
+        elif isinstance(string, MyElement):
+            self.touchAction.tap(string).perform()
+            self.last_tapped_widget = string
+        else:
+            logging.error("string class is: %s", string.__class__.__name__)
+            raise Exception
+        
         
     @test_step_info
     def click_widget(self, string):
-        widget = self.driver.find_element_by_string(string)
-        widget.click()
+        if isinstance(string, unicode) or isinstance(string, str):
+            widget = self.driver.find_element_by_string(string)
+            widget.click()
+            self.last_tapped_widget = widget
+        elif isinstance(string, MyElement):
+            string.click()
+            self.last_tapped_widget = string
+        else:
+            logging.error("string class is: %s", string.__class__.__name__)
+            raise Exception
         
     @test_step_info
     def tap_permision_widget(self, choice="accept"):
@@ -780,7 +817,8 @@ class CommonTestStep(unittest.TestCase):
             raise UnknownStringException 
             
         self.assertTrue(button)
-        self.touchAction.press(button, self.tap_duration).release().perform()
+        self.touchAction.tap(button).perform()
+        self.last_tapped_widget = button
 
     @test_step_info
     def long_tap_widget(self, string, x=0, y=0, duration=1000):
@@ -801,46 +839,7 @@ class CommonTestStep(unittest.TestCase):
             duration = self.long_tap_duration
             
         self.touchAction.long_press(widget, x, y, duration).release().perform()
-        
-    @test_step_info
-    def precise_tap_widget(self, string, x=0, y=0, duration=200, allowOutOfBound=False):
-        widget = self.driver.find_element_by_string(string)
-        lx = widget.location.get('x')
-        ly = widget.location.get('y')
-
-        logging.debug("location x:%s location y:%s", lx, ly)
-        size = widget.size
-        logging.debug("size %s %s", size["width"], size["height"])
-        if x=="middle":
-            x = size["width"] / 2
-        
-        if y=="middle":
-            y = size["height"]/ 2
-        
-        if x==0 and y==0:
-            x = size["width"] / 2
-            y = size["height"]/ 2
-        
-        
-        window_size = self.driver.get_window_size()
-        logging.debug("window size %s %s", window_size["width"], window_size["height"])
-
-        try:
-            if (x>size['width'] or x<0
-            or y>size['height'] or y<0
-            or x+lx>window_size['width']
-            or y+ly>window_size['height']):
-                logging.error("Out of bound exception")
-                raise OutOfBoundException
-        except OutOfBoundException:
-            if not allowOutOfBound:
-                logging.error("Out of bound exception")
-                raise OutOfBoundException
-
-        if duration == 200:
-            duration = self.tap_duration
-            
-        self.touchAction.press(widget, x+lx, y+ly).wait(duration).release().perform()
+        self.last_tapped_widget = widget
         
     @test_step_info
     def tap_widget_if_image_alike(self, string, ref_image_name, after_image_name=None):
@@ -850,7 +849,8 @@ class CommonTestStep(unittest.TestCase):
         added_file_name = self.__add_resolution_to_file_name(ref_image_name, elementImageSize)
         
         if self.__pil_image_similarity(added_file_name, elementImageName) == 0:
-            self.touchAction.press(star_btn, self.tap_duration).release().perform()
+            self.touchAction.tap(star_btn).perform()
+            self.last_tapped_widget = star_btn
         else:
             logging.debug("image not alike")
             self.assertTrue(0)
@@ -933,17 +933,51 @@ class CommonTestStep(unittest.TestCase):
             duration = self.swipe_duration
             
         if direction == "up":
-            self.driver.swipe(size['width']/2+lx, size['height']-1+ly, size['width']/2+lx, 1+ly,                duration)
+            self.driver.swipe(size['width']/2+lx, size['height']-1+ly\
+            , size['width']/2+lx, 1+ly,                duration)
         elif direction == "down":
-            self.driver.swipe(size['width']/2+lx, 1+ly,                size['width']/2+lx, size['height']-1+ly, duration)
+            self.driver.swipe(size['width']/2+lx, 1+ly\
+            , size['width']/2+lx, size['height']-1+ly, duration)
         elif direction == "left":
-            self.driver.swipe(size['width']-1+lx, size['height']/2+ly, 1+lx,               size['height']/2+ly, duration)
+            self.driver.swipe(size['width']-1+lx, size['height']/2+ly\
+            , 1+lx,               size['height']/2+ly, duration)
         elif direction == "right":
-            self.driver.swipe(1+lx,               size['height']/2+ly, size['width']-1+lx, size['height']/2+ly, duration)
+            self.driver.swipe(1+lx,               size['height']/2+ly\
+            , size['width']-1+lx, size['height']/2+ly, duration)
+        else:
+            logging.error("Wrong direction %s", str(direction))
+            raise WrongDirectionException
+        
+    @test_step_info        
+    def swipe_by_direction(self, direction, duration=500):
+        #if self.platformName == 'Android':
+        window_size = self.driver.get_window_size()
+        logging.debug("window size %s %s", window_size["width"], window_size["height"])
+        lx = window_size["width"]
+        ly = window_size["height"]
+
+        if duration == 500:
+            duration = self.swipe_duration
+            
+        if direction == "up":
+            self.driver.swipe(lx/2, ly-1, lx/2, 1, duration)
+        elif direction == "down":
+            self.driver.swipe(lx/2, 1, lx/2, ly-1, duration)
+        elif direction == "left":
+            self.driver.swipe(lx-1, ly/2, 1, ly/2, duration)
+        elif direction == "right":
+            self.driver.swipe(1, ly/2, lx-1, ly/2, duration)
         else:
             logging.error("Wrong direction %s", str(direction))
             raise WrongDirectionException
     
+    @test_step_info
+    def swipe_up_and_retry(self, tips, button_string):
+        self.swipe_by_direction("up")
+        self.driver.has_widget(tips)
+        retry_widget = self.driver.has_widget(button_string)
+        self.tap_widget(retry_widget)
+        
     @test_step_info
     def pinch_widget(self, string, percentage=200, steps=50):
         widget = self.driver.find_element_by_string(string)

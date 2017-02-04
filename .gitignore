@@ -1,4 +1,4 @@
-
+*.patch
 *.swp
 .DS_Store
 node_modules
@@ -8,3 +8,6 @@ node_modules
 *~
 .idea
 __pycache__
+*.pyc
+.cache/
+homeinn/appium/python/*.png

@@ -5,9 +5,12 @@
 import os
 import sys
 from time import sleep
+import getpass
+from simplecrypt import encrypt, decrypt
 
 from behave import *
 from behave.log_capture import capture
+
 
 #from appium import webdriver
 from appium.webdriver.common.touch_action import TouchAction
@@ -29,15 +32,15 @@ except:
 else:
     RESOURCE_PATH = "assistant/resource/"
     
+        
 def before_all(context):
-    context = context
-    #if not context.config.log_capture:
-    #    logging.basicConfig(level=logging.DEBUG)
+    usr = raw_input("Please input your HomeInn account:")
+    if not usr=="":
+        context.usr = encrypt("beHome", usr)
+    auth = getpass.getpass("Please input your HomeInn password:")
+    if not auth=="":
+        context.auth = encrypt("beHome", auth)
     
-def after_all(context):
-    context = context
-    
-def before_feature(context, feature):
     context.testStep = CommonTestStep()
     
     desired_caps = {}
@@ -54,11 +57,20 @@ def before_feature(context, feature):
     #desired_caps['udid'] = '8627d0e6' #Yan's Oppo
 
     context.testStep.init_appium(desired_caps)
-    context.touchAction = TouchAction(context.testStep.driver)
+    #if not context.config.log_capture:
+    #    logging.basicConfig(level=logging.DEBUG)
+    
+
+    
+def after_all(context):
+    context.testStep.deinit_appium()
+    
+def before_feature(context, feature):
+    context = context
 
 def after_feature(context, feature):
     #case_function_name = feature.name
-    context.testStep.deinit_appium()
+    context = context
 
 def before_scenario(context, scenario):
     context = context
@@ -71,4 +83,5 @@ def after_scenario(context, scenario):
     screenshotname = "./" + scenario.name + ".png"
     sleep(1)
     context.testStep.driver.get_screenshot_as_file(screenshotname)
-    context.testStep.driver.close_app()
+    if (scenario.status=='failed'):
+        context.testStep.driver.close_app()
